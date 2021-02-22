@@ -26,7 +26,9 @@ The output must be an ordered list {(S, action, id), ...}, where action is in
 {Pickup, Dropoff}. Pickup means the robot picks up the order id which starts at (x,y), 
 and Dropoff means the robot drops off the order id which ends at (x,y). 
 
+<b> 
 This output is correct if and only if, for each order (id, (S,D), w, t), 
 the sum of weights the robot travels through from (S, Pickup, id) to (D, Dropoff, id) is 
-less than or equal to t, and at any point in time the robot carries no more than C 
-total capacity.
+less than or equal to t (i.e. the delivery time is up to t), and at any point in time the 
+robot carries no more than C total capacity. 
+</b>
