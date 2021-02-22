@@ -9,15 +9,13 @@ I'm on Team C9 (GrubTub).
 The robot has a total capacity of C, and is at node S in an undirected, weighted graph. The 
 weight of an edge corresponds with the time the robot takes to travel across the edge.
 
-The input is a list of orders {(id, (S,D), w, t), ...}. 
+The input is a list of orders {(id, (S,D), w), ...}. 
 
 id is the unique identification string of the order. 
 
 S is the starting node, D is the destination node.
 
 w is the weight of the order.
-
-t is the maximum "time" (sum of weights from robot picking up to dropping off) this order can take.
 
 The robot can only fit up to C capacity at once, and can deliver/pick up multiple deliveries 
 at the same location, if they all fit.
@@ -33,6 +31,7 @@ For each order id, (S, Pickup, id) must be before (D, Dropoff, id) in the list.
 <b> 
 This output is correct if and only if, for each order (id, (S,D), w, t), 
 the sum of weights the robot travels through from (S, Pickup, id) to (D, Dropoff, id) in the list is 
-less than or equal to t (i.e. the delivery time is up to t), and at any point in time the 
+less than or equal to 2*d(S,D) (i.e. the delivery time is less than the human round trip time, which 
+is just the time it takes a human walking from S to D and back to S), and at any point in time the 
 robot carries no more than C total capacity. 
 </b>
