@@ -22,7 +22,9 @@ t is the maximum "time" (sum of weights from robot picking up to dropping off) t
 The robot can only fit up to C capacity at once, and can deliver/pick up multiple deliveries 
 at the same location, if they all fit.
 
-The output must be an ordered list {(S, action, id), ...}, where action is in 
+<b> 
+The output must be an ordered list {(S, action, id), ...},
+</b> where action is in 
 {Pickup, Dropoff}. Pickup means the robot picks up the order id which starts at (x,y), 
 and Dropoff means the robot drops off the order id which ends at (x,y). 
 
