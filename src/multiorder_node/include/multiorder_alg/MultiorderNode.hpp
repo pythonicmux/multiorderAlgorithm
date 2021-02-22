@@ -1,6 +1,9 @@
 #pragma once
 
 #include <ros/ros.h>
+#include <map>
+#include <utility>
+#include <vector>
 
 namespace Multiorder {
 
@@ -11,6 +14,7 @@ public:
 
 private:
     ros::NodeHandle& nh_;
+    std::map<char, std::vector<std::pair<char, int>>> graph_;
 };
 
 } // namespace Multiorder
