@@ -6,29 +6,27 @@ I'm on Team C9 (GrubTub).
 
 ## The problem is as follows:
 
-The robot has a total capacity of C, and is at (0,0) on a coordinate plane. We're supplied 
-a function d:((x_1, y_1), (x_2, y_2)) => R+ U {0} that supplies us the time it takes to travel between any 
-two points on this plane, in seconds.
+The robot has a total capacity of C, and is at node S in an undirected, weighted graph. The 
+weight of an edge corresponds with the time the robot takes to travel across the edge.
 
-The input is a list of orders {((x_1,y_1), (x_2, y_2), w, t), ...}. 
+The input is a list of orders {(id, (S,D), w, t), ...}. 
 
-(x_1,y_1) is the starting coordinate.
+id is the unique identification string of the order. 
 
-(x_2, y_2) is the ending coordinate.
+S is the starting node, D is the destination node.
 
 w is the weight of the order.
 
-t is the maximum time this order can take.
+t is the maximum "time" (sum of weights from robot picking up to dropping off) this order can take.
 
 The robot can only fit up to C capacity at once, and can deliver/pick up multiple deliveries 
 at the same location, if they all fit.
 
-The output must be an ordered list {((x,y), action, idx), ...}, where action is in 
-{Pickup, Dropoff}. Pickup means the robot picks up the order idx which starts at (x,y), 
-and Dropoff means the robot drops off the order idx which ends at (x,y). 
+The output must be an ordered list {(S, action, id), ...}, where action is in 
+{Pickup, Dropoff}. Pickup means the robot picks up the order id which starts at (x,y), 
+and Dropoff means the robot drops off the order id which ends at (x,y). 
 
-This list assumes the robot takes time to travel across the points corresponding to the 
-function d, and that the actual actions take 0 time. 
-
-A verified YES-instance would be a list s.t. each order is dropped off, and ((x,y), Dropoff, idx) 
-happens before the dropoff time of idx.
+This output is correct if and only if, for each order (id, (S,D), w, t), 
+the sum of weights the robot travels through from (S, Pickup, id) to (D, Dropoff, id) is 
+less than or equal to t, and at any point in time the robot carries no more than C 
+total capacity.
