@@ -13,8 +13,10 @@ public:
     virtual ~MultiorderNode();
 
 private:
+    static const std::vector<char> nodes_; 
     ros::NodeHandle& nh_;
-    std::map<char, std::vector<std::pair<char, int>>> graph_;
+    std::map<char, std::set<char>> edges_;
+    std::map<std::pair<char, char>, double> weights_;
 };
 
 } // namespace Multiorder
