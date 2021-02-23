@@ -28,7 +28,7 @@ MultiorderNode::MultiorderNode(ros::NodeHandle& nodeHandle) : nh_(nodeHandle) {
     neighbors_[0].insert(1);
     weights_[0][1] = 89.62;
     neighbors_[0].insert(4);
-    weights_[0][4] = 91.91;
+    weights_[0][4] = 32.29;
 
     neighbors_[1].insert(0);
     weights_[1][0] = 89.62;
@@ -65,8 +65,8 @@ MultiorderNode::MultiorderNode(ros::NodeHandle& nodeHandle) : nh_(nodeHandle) {
 
     neighbors_[6].insert(2);
     weights_[6][2] = 34.7;
-    neighbors_[6].insert(2);
-    weights_[6][2] = 39.59;
+    neighbors_[6].insert(5);
+    weights_[6][5] = 39.59;
 
     precalculateMinTravelTimes();
 
