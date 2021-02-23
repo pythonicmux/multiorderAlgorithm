@@ -30,6 +30,15 @@ struct Order {
     {
         return id == rhs.id; 
     }
+    
+    bool operator!=(const Order& rhs) const 
+    {
+        return id != rhs.id; 
+    }
+
+    // Nice to have a default copy constructor 
+    // for any recursion.
+    Order(const Order&) = default;
 };
 
 // The definition of a "move" that a robot makes, 
@@ -77,12 +86,26 @@ private:
     // An internal representation of the robot's state, used for 
     // state enumeration and recursion. 
     struct Robot {
-        std::set<Order> orders; // All orders the robot currently has onboard.
-        std::map<int, int> deliveryTimes; // How long the delivery's been taking so far.
+        std::set<Order> currentOrders; // All orders the robot currently has onboard.
+        std::map<Order, double> deliveryTimes; // How long the delivery's been taking so far.
         std::set<Order> remainingOrders; // Orders left for the robot to pick up.
+        double capacity = 2.0; // Remaining capacity 
 
         Robot() = default;
         ~Robot() {};
+
+        Robot(const Robot& r) {
+            for(auto x:r.currentOrders) {
+                currentOrders.insert(x);
+            }
+            for(auto x:r.remainingOrders) {
+                remainingOrders.insert(x);
+            }
+            for(auto p:r.deliveryTimes) {
+                deliveryTimes[p.first] = p.second;
+            }
+            capacity = r.capacity;
+        }
     };
     
     // Helper function for recursing down with a partially completed state. 

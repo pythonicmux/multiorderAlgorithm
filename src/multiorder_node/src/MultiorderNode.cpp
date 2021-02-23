@@ -139,7 +139,6 @@ void MultiorderNode::precalculateMinTravelTimes() {
 
 std::vector<Move> MultiorderNode::calculateMultiorder(std::vector<Order> orders) {
     Robot r;
-    r.remainingOrders = std::set<Order>();
     for (Order o:orders) {
         r.remainingOrders.insert(o);
     }
@@ -147,8 +146,32 @@ std::vector<Move> MultiorderNode::calculateMultiorder(std::vector<Order> orders)
     return calculateMultiorder(r);
 }
 
+// Try every possible next order that can still satisfy the constraints 
+// and backtrack if needed.
 std::vector<Move> MultiorderNode::calculateMultiorder(Robot r) {
-    
+    // If we're in an invalid state then return nothing, i.e. it's 
+    // impossible given our circumstances.
+    // Capacity must be nonnegative.
+    if(r.capacity < 0) {
+        return std::vector<Move>{};
+    }
+    // The deliveries must be <= 2*time to travel there and back.
+    for(auto p:r.deliveryTimes) {
+        if(p.second > 2*minTravelTimes_[p.first.S][p.first.D]) {
+            return std::vector<Move>{};
+        }
+    }
+
+    // We can either try picking up an order or not picking up any orders.
+    for (auto order:r.remainingOrders) {
+        // If the order can fit then we add it to the robot's current orders.
+        if(order.w <= r.capacity) {
+            Robot next(r);
+            next.remainingOrders.erase(order);
+            next.currentOrders.insert(order);
+            next.capacity -= order.w;
+        } 
+    }
 }
 
 } // namespace Multiorder
