@@ -1,7 +1,9 @@
 # Overview
 
-This is a proof-of-concept for an optimization (?) algorithm 
-I'm designing and implementing for 18-500 ECE Senior Capstone at Carnegie Mellon, Spring 2021. 
+This is a proof-of-concept for an algorithm that will act as a global planner for an
+autonomous delivery robot (currently this is just a constraint satisfaction problem 
+until I find some kind of cost function to make it an optimization problem). 
+I'm designing and implementing this for 18-500 ECE Senior Capstone at Carnegie Mellon, Spring 2021. 
 I'm on Team C9 (GrubTub). 
 
 ## The problem is as follows:
@@ -38,3 +40,23 @@ less than or equal to 2*d(S,D) (i.e. the delivery time is less than the human ro
 is just the time it takes a human walking from S to D and back to S), and at any point in time the 
 robot carries no more than C total capacity. 
 </b>
+
+## The solution, currently:
+
+Right now, it's just backtracking with all the possible orders and states of the robot 
+depending on which orders it's picking up/dropping off. 
+
+## To run
+
+This algorithm is written in a standalone ROS node that doesn't subscribe or publish anything. 
+It just runs some unit tests to make sure the algorithm works. 
+
+To build:
+```
+catkin clean; catkin build; source devel/<your shell>.sh
+```
+
+To run the tests:
+```
+roslaunch multiorderSim.launch
+```
