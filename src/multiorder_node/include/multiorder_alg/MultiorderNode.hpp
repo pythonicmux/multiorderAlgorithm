@@ -67,7 +67,8 @@ public:
     // Map and robot-defined constants.
     static constexpr int numNodes_ = 7;
     static constexpr double capacity_ = 2.0;
-    
+    static constexpr int robotStartNode = 0;
+
 private:
     ros::NodeHandle& nh_;
 
@@ -87,7 +88,7 @@ private:
     void precalculateMinTravelTimes();
 
     // An internal representation of the robot's state, used for 
-    // state enumeration and recursion. 
+    // state enumeration and recursion.
     struct Robot {
         int location; // The node the robot is on.
         std::set<Order> currentOrders; // All orders the robot currently has onboard.
@@ -96,7 +97,7 @@ private:
         std::vector<Move> moves;
         double capacity = 2.0; // Remaining capacity 
 
-        Robot() = default;
+        Robot() : location{robotStartNode} {}
         ~Robot() {};
 
         Robot(const Robot& r) {
