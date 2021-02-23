@@ -11,8 +11,8 @@ MultiorderNode::MultiorderNode(ros::NodeHandle& nodeHandle,
 {
     // Check to make sure it's a valid graph. 
     if (numNodes_ <= 0 || capacity <= 0.0 || robotStartNode_ > numNodes_ || 
-            robotStartNode_ < 0 || len(weights_) != numNodes_ || len(weights_[0]) != numNodes || 
-            len(neighbors_) != numNodes) {
+            robotStartNode_ < 0 || weights_.size() != numNodes_ || weights_[0].size() != numNodes || 
+            neighbors_.size() != numNodes) {
         ROS_ERROR("Invalid graph or robot state parameter passed into MultiorderNode.");
     }
 

@@ -57,6 +57,7 @@ public:
     // and robot parameters. The robot state will reset to the 
     // specified initial state between each call to calculateMultiorder. 
     //
+    // The graph and robot state passed in must be valid: 
     // numNodes/capacity must be greater than 0, weights must be length [numNodes][numNodes], 
     // robotStartNode must be a valid node and neighbors must be length numNodes, 
     // otherwise this constructor will throw an error.

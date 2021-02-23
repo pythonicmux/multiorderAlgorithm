@@ -19,7 +19,7 @@ std::vector<std::vector<double>> weights;
  * Porter               Baker
  */
 void initializeCMU() {
-    // Initialize the graph (weights and neighbors).
+    // Allocate memory for the graph. 
     for(int i = 0; i < numNodes; i++) {
         neighbors[i] = std::set<int>{};
         weights.push_back(std::vector<double>{});
@@ -32,6 +32,7 @@ void initializeCMU() {
         }
     }
 
+    // Initialize the graph (weights and neighbors).
     neighbors[0].insert(1);
     weights[0][1] = 89.62;
     neighbors[0].insert(4);
@@ -77,7 +78,7 @@ void initializeCMU() {
 }
 
 // An easy test with disjoint 2-node paths.
-bool testEasy(Multiorder::MultiorderNode& mn) 
+void testEasy(Multiorder::MultiorderNode& mn) 
 {
     std::vector<Multiorder::Order> input;
     input.push_back(Multiorder::Order(0, 0, 1, 1.5));
@@ -103,7 +104,7 @@ bool testEasy(Multiorder::MultiorderNode& mn)
 
 // An medium test that has some random long paths and short 
 // paths.
-bool testMedium(Multiorder::MultiorderNode& mn) 
+void testMedium(Multiorder::MultiorderNode& mn) 
 {
     std::vector<Multiorder::Order> input;
     input.push_back(Multiorder::Order(0, 0, 6, 0.1));
@@ -130,8 +131,8 @@ bool testMedium(Multiorder::MultiorderNode& mn)
     }
 }
 
-// An impossible test with a 2.1 kg order. Should return nothing.
-bool testImpossibleWeight(Multiorder::MultiorderNode& mn) 
+// An impossible test with a 2.1 kg order. Should return no solution. 
+void testImpossibleWeight(Multiorder::MultiorderNode& mn) 
 {
     std::vector<Multiorder::Order> input;
     input.push_back(Multiorder::Order(0, 0, 1, 2.1));
@@ -150,6 +151,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "multiorder_alg_node");
     ros::NodeHandle nodeHandle;
 
+    // Initialize the graph of CMU to pass in. 
     initializeCMU();
 
     // Initialize the multiorder node with the map of CMU, with 
