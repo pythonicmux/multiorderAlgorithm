@@ -86,15 +86,18 @@ private:
     // An internal representation of the robot's state, used for 
     // state enumeration and recursion. 
     struct Robot {
+        int location; // The node the robot is on.
         std::set<Order> currentOrders; // All orders the robot currently has onboard.
         std::map<Order, double> deliveryTimes; // How long the delivery's been taking so far.
         std::set<Order> remainingOrders; // Orders left for the robot to pick up.
+        std::vector<Move> moves;
         double capacity = 2.0; // Remaining capacity 
 
         Robot() = default;
         ~Robot() {};
 
         Robot(const Robot& r) {
+            location = r.location;
             for(auto x:r.currentOrders) {
                 currentOrders.insert(x);
             }
@@ -103,6 +106,9 @@ private:
             }
             for(auto p:r.deliveryTimes) {
                 deliveryTimes[p.first] = p.second;
+            }
+            for(auto x:r.moves) {
+                moves.push_back(x);
             }
             capacity = r.capacity;
         }

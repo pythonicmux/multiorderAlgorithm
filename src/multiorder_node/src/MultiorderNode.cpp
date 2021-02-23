@@ -164,14 +164,64 @@ std::vector<Move> MultiorderNode::calculateMultiorder(Robot r) {
 
     // We can either try picking up an order or not picking up any orders.
     for (auto order:r.remainingOrders) {
-        // If the order can fit then we add it to the robot's current orders.
+        // If the order can fit then we try travelling to 
+        // the order's start and adding it to the robot's current orders.
         if(order.w <= r.capacity) {
             Robot next(r);
+            next.location = order.S;
+            // The robot travels to order.S and time passes.
+            for (auto it = r.deliveryTimes.begin(); it != r.deliveryTimes.end(); it++) {
+                it->second += minTravelTimes_[r.location][order.S];
+            }
+
+            // The robot takes this order, and updates its state.  
             next.remainingOrders.erase(order);
             next.currentOrders.insert(order);
+            next.deliveryTimes[order] = 0.0;
             next.capacity -= order.w;
+
+            next.moves.push_back(Move{order.S, PICKUP, order.id});
+
+            // See if this next state yields a solution.
+            auto potentialSol = calculateMultiorder(next);
+            if(potentialSol.size()) {
+                return potentialSol;
+            }
         } 
     }
+
+    // We can try dropping off an order or not dropping off any orders. 
+    for (auto order:r.currentOrders) {
+        Robot next(r);
+        next.location = order.D;
+        // The robot travels to order.D and time passes.
+        for (auto it = r.deliveryTimes.begin(); it != r.deliveryTimes.end(); it++) {
+            it->second += minTravelTimes_[r.location][order.D];
+        }
+
+        // The robot drops off this order, and updates its state.  
+        next.currentOrders.erase(order);
+        next.capacity += order.w;
+
+        next.moves.push_back(Move{order.D, DROPOFF, order.id});
+
+        // See if this next state yields a solution.
+        auto potentialSol = calculateMultiorder(next);
+        if(potentialSol.size()) {
+            return potentialSol;
+        }
+    }
+
+    // If there are no valid actions left then either the robot 
+    // has completed all orders, which means we're done, 
+    // or the robot cannot complete any orders onwards from this state, 
+    // so we have an unsuccessful state.
+    if(r.remainingOrders.size() > 0) {
+        return std::vector<Move>{};
+    } else {
+        return r.moves;
+    }
+    
 }
 
 } // namespace Multiorder
