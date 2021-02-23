@@ -3,7 +3,8 @@
 namespace Multiorder {
 
 /*
- * The graph of engineering quad roads is as follows: (weights are distances in meters)
+ * The graph of engineering quad roads is as follows: (Weights are distances in meters. Assuming
+ * the robot goes 1m/s this weight is also measured in seconds as time.)
  * Wean Turtle             Doherty Main Entrance
  * 0--89.62--1---38.74---2---53.97---3
  * |         |        /  |
