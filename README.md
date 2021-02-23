@@ -43,8 +43,35 @@ robot carries no more than C total capacity.
 
 ## The solution, currently:
 
-Right now, it's just backtracking with all the possible orders and states of the robot 
-depending on which orders it's picking up/dropping off. 
+The user specifies a graph and initial robot state for the MultiorderNode to calculate 
+its moves on. 
+
+When processing an input list of orders, `MultiorderNode::calculateMultiorder` will create an 
+internal robot "state" and backtrack on all possible moves that the robot can do given its current state. 
+It recurses and views all possible next states to try to find a solution. 
+
+## API overview
+
+### `MultiOrderNode` constructor
+
+A user creates a graph and specifies a robot's starting location and weight capacity (to fit orders in), 
+and then the user can create a `MultiorderNode` to run the algorithm on the graph. 
+
+### `MultiorderNode::calculateMultiorder` 
+
+This function is the multiorder algorithm. It takes in a list of `Order`s and will output an 
+ordered vector of `Move`s that the robot 
+can do to deliver all the `Order`s on time and with the weight limitations of the robot, 
+if possible. If it's impossible, the algorithm returns an empty vector.
+
+## File overview
+
+### `src/multiorder_node/include/MultiorderNode.hpp` 
+
+contains the ROS internal node and API that faciliates the multiorder algorithm. 
+
+### `src/multiorder_node/src/multiorder_alg_node.cpp` 
+is the high-level ROS node that instantiates a `MultiorderNode` and tests it with a graph of CMU. 
 
 ## To run
 
