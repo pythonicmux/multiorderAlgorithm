@@ -23,7 +23,7 @@ S is the starting node, D is the destination node.
 w is the weight of the order.
 
 The robot can only fit up to C capacity at once, and can deliver/pick up multiple deliveries 
-at the same location, if they all fit.
+at the same location, if they all fit. We assume pickups and dropoffs take 0 time.
 
 <b> 
 The output must be an ordered list {(S, action, id), ...},
@@ -52,7 +52,7 @@ It recurses and views all possible next states to try to find a solution.
 
 ## API overview
 
-### `MultiOrderNode` constructor
+### `MultiOrderNode` class
 
 A user creates a graph and specifies a robot's starting location and weight capacity (to fit orders in), 
 and then the user can create a `MultiorderNode` to run the algorithm on the graph. 
@@ -62,7 +62,25 @@ and then the user can create a `MultiorderNode` to run the algorithm on the grap
 This function is the multiorder algorithm. It takes in a list of `Order`s and will output an 
 ordered vector of `Move`s that the robot 
 can do to deliver all the `Order`s on time and with the weight limitations of the robot, 
-if possible. If it's impossible, the algorithm returns an empty vector.
+if possible. If it's impossible, the algorithm returns an empty vector. 
+
+### `Order` struct
+
+An algo input specifying that order `id` will be `w` kg and go from node `S` to node `D` following 
+the weighted edges ("time to travel across the edge") of the graph.
+Contains a unique order ID, source node, destination node, and the weight of the order. 
+The weight can be heavier than the capacity of the robot, but it will lead to the algorithm 
+returning no solution. 
+
+From the problem definition, the algorithm must be able to find a solution such that 
+this order, from picking it up to dropping it off, will take no longer than 
+2 * the minimum travel time from `S` to `D`, and the robot cannot take this order 
+if its current remaining capacity is less than`w`. 
+
+### `Move` struct
+
+An algo output specifying a move that the robot takes in delivering the input 
+orders, where the robot goes to `node` and does `action` for order `id`. 
 
 ## File overview
 
