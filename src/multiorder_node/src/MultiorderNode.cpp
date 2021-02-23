@@ -138,9 +138,17 @@ void MultiorderNode::precalculateMinTravelTimes() {
 
 
 std::vector<Move> MultiorderNode::calculateMultiorder(std::vector<Order> orders) {
+    Robot r;
+    r.remainingOrders = std::set<Order>();
+    for (Order o:orders) {
+        r.remainingOrders.insert(o);
+    }
+
+    return calculateMultiorder(r);
+}
+
+std::vector<Move> MultiorderNode::calculateMultiorder(Robot r) {
     
-} 
-
-
+}
 
 } // namespace Multiorder
