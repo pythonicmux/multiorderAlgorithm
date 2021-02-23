@@ -18,7 +18,10 @@ struct Order {
     int id; // Unique order ID
     int S; // Source node
     int D; // Destination node
-    int w; // Order weight
+    double w; // Order weight
+
+    Order(int id, int S, int D, double w) :
+        id(id), S(S), D(D), w(w) {}
 
     // Order must be set-friendly. 
     bool operator<(const Order& rhs) const 
