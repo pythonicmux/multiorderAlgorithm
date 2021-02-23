@@ -55,7 +55,8 @@ It recurses and views all possible next states to try to find a solution.
 ### `MultiOrderNode` class
 
 A user creates a graph and specifies a robot's starting location and weight capacity (to fit orders in), 
-and then the user can create a `MultiorderNode` to run the algorithm on the graph. 
+and then the user can create a `MultiorderNode` to run the algorithm on the graph for any series of 
+valid orders. 
 
 ### `MultiorderNode::calculateMultiorder` 
 
