@@ -136,8 +136,9 @@ void MultiorderNode::precalculateMinTravelTimes() {
     }
 }
 
-void MultiorderNode::calculateMultiorder(std::vector<Order> orders) {
 
+std::vector<Move> MultiorderNode::calculateMultiorder(std::vector<Order> orders) {
+    
 } 
 
 
