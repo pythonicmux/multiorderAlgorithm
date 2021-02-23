@@ -51,6 +51,8 @@ depending on which orders it's picking up/dropping off.
 This algorithm is written in a standalone ROS node that doesn't subscribe or publish anything. 
 It just runs some unit tests to make sure the algorithm works. 
 
+Make sure you have ROS Melodic installed on your computer. 
+
 To build:
 ```
 catkin clean; catkin build; source devel/<your shell>.sh
