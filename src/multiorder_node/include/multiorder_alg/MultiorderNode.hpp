@@ -74,6 +74,9 @@ public:
     // is at most 2 * minTravelTimes_[S_id][D_id] (i.e. the minimum time it 
     // takes to go from S to D and back), and that the robot 
     // never picks up more than its capacitys' worth of orders. 
+    //
+    // Each order must contain a valid source/destination node and a non-negative capacity. 
+    // Otherwise, the algorithm will have undefined behavior. 
     std::vector<Move> calculateMultiorder(std::vector<Order> orders);
 
 private:

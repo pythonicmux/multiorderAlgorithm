@@ -94,6 +94,13 @@ void MultiorderNode::precalculateMinTravelTimes() {
 
 
 std::vector<Move> MultiorderNode::calculateMultiorder(std::vector<Order> orders) {
+    // Check that all of the orders are valid. 
+    for(auto order:orders) {
+        if (order.w < 0 || order.S < 0 || order.S > numNodes_ || 
+                order.D < 0 || order.D > numNodes_) {
+            ROS_ERROR("User has placed an invalid order to the algorithm.");
+        }
+    }
     // Initialize the robot start state to the user's passed-in specification. 
     Robot r(robotStartNode_, capacity_);
     // Give it the order list to search for a satisfactory plan. 
