@@ -71,7 +71,7 @@ MultiorderNode::MultiorderNode(ros::NodeHandle& nodeHandle) : nh_(nodeHandle) {
     precalculateMinTravelTimes();
 
     // Make sure the precomputations are correct. 
-    for (int i = 0; i < numNodes_; i++) {
+    /*for (int i = 0; i < numNodes_; i++) {
         ROS_INFO_STREAM(i << " is connected to: ");
         for (int j : neighbors_[i]) {
             ROS_INFO_STREAM(j << " ");
@@ -83,7 +83,7 @@ MultiorderNode::MultiorderNode(ros::NodeHandle& nodeHandle) : nh_(nodeHandle) {
         for (int j = 0; j < numNodes_; j++) {
             ROS_INFO_STREAM("d(" << i << ", " << j << ") = " << minTravelTimes_[i][j] << "\n");
         }
-    }
+    }*/
 }
 
 MultiorderNode::~MultiorderNode() {}
@@ -135,4 +135,11 @@ void MultiorderNode::precalculateMinTravelTimes() {
         }
     }
 }
+
+void MultiorderNode::calculateMultiorder(std::vector<Order> orders) {
+
+} 
+
+
+
 } // namespace Multiorder
