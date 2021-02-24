@@ -50,6 +50,15 @@ When processing an input list of orders, `MultiorderNode::calculateMultiorder` w
 internal robot "state" and backtrack on all possible moves that the robot can do given its current state. 
 It recurses and views all possible next states to try to find a solution. 
 
+### Complexity
+
+The state space is all possible robot states, i.e. all possible combos of current orders with elapsed delivery times * 
+all current robot locations, and the backtracking algorithm will need to search possibly all of them. 
+
+The robot can have nC1 + nC2 + ... nCn 2^n possibilities for current orders, and taking into account the different 
+elapsed delivery times, the complexity becomes <max HRTT of any order>*2^n = O(2^n). If this problem is NP-hard, which 
+  it likely is, then this is the best complexity we can get for a solution (assuming P != NP).
+
 ## API overview
 
 ### `MultiOrderNode` class
