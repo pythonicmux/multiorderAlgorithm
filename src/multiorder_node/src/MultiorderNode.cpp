@@ -117,8 +117,9 @@ std::vector<Move> MultiorderNode::calculateMultiorder(std::vector<Order> orders)
 std::vector<Move> MultiorderNode::calculateMultiorder(Robot r) {
     // If we're in an invalid state then return nothing, i.e. it's 
     // impossible given our circumstances.
-    // Capacity must be nonnegative.
-    if(r.remainingCapacity < 0) {
+    // Capacity must be nonnegative, and the delivery times map must be 
+    // the same size as the current orders vector. 
+    if(r.remainingCapacity < 0 || r.deliveryTimes.size() != r.currentOrders.size()) {
         return std::vector<Move>{};
     }
     // The deliveries must be <= 2*min time to travel there and back.
@@ -177,6 +178,11 @@ std::vector<Move> MultiorderNode::calculateMultiorder(Robot r) {
         if(potentialSol.size()) {
             return potentialSol;
         }
+    }
+
+    // Make sure the state of the robot is intact.
+    if(r.remainingCapacity < 0 || r.deliveryTimes.size() != r.currentOrders.size()) {
+        return std::vector<Move>{};
     }
 
     // If there are no valid actions left then either the robot 
