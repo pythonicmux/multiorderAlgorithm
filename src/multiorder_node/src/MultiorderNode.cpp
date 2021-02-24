@@ -118,7 +118,7 @@ std::vector<Move> MultiorderNode::calculateMultiorder(Robot r) {
     // If we're in an invalid state then return nothing, i.e. it's 
     // impossible given our circumstances.
     // Capacity must be nonnegative.
-    if(r.capacity < 0) {
+    if(r.remainingCapacity < 0) {
         return std::vector<Move>{};
     }
     // The deliveries must be <= 2*min time to travel there and back.
@@ -132,7 +132,7 @@ std::vector<Move> MultiorderNode::calculateMultiorder(Robot r) {
     for (auto order:r.remainingOrders) {
         // If the order can fit then we try travelling to 
         // the order's start and adding it to the robot's current orders.
-        if(order.w <= r.capacity) {
+        if(order.w <= r.remainingCapacity) {
             Robot next(r);
             next.location = order.S;
             // The robot travels to order.S and time passes.
@@ -144,7 +144,7 @@ std::vector<Move> MultiorderNode::calculateMultiorder(Robot r) {
             next.remainingOrders.erase(order);
             next.currentOrders.insert(order);
             next.deliveryTimes[order] = 0.0;
-            next.capacity -= order.w;
+            next.remainingCapacity -= order.w;
 
             next.moves.push_back(Move{order.S, PICKUP, order.id});
 
@@ -167,7 +167,8 @@ std::vector<Move> MultiorderNode::calculateMultiorder(Robot r) {
 
         // The robot drops off this order, and updates its state.  
         next.currentOrders.erase(order);
-        next.capacity += order.w;
+        next.deliveryTimes.erase(order);
+        next.remainingCapacity += order.w;
 
         next.moves.push_back(Move{order.D, DROPOFF, order.id});
 

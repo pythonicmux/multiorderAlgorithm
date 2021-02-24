@@ -110,10 +110,10 @@ private:
         std::map<Order, double> deliveryTimes; // How long the delivery's been taking so far.
         std::set<Order> remainingOrders; // Orders left for the robot to pick up.
         std::vector<Move> moves;
-        double capacity; // Remaining capacity 
+        double remainingCapacity; // Remaining capacity 
 
         Robot(int startNode, double capacity) : 
-            location{startNode}, capacity{capacity} {}
+            location{startNode}, remainingCapacity{capacity} {}
         Robot(const Robot& r) {
             location = r.location;
             for(auto x:r.currentOrders) {
@@ -128,7 +128,7 @@ private:
             for(auto x:r.moves) {
                 moves.push_back(x);
             }
-            capacity = r.capacity;
+            remainingCapacity = r.remainingCapacity;
         }
         
         ~Robot() {};
