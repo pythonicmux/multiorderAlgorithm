@@ -28,13 +28,14 @@ at the same location, if they all fit. We assume pickups and dropoffs take 0 tim
 <b> 
 The output must be an ordered list {(S, action, id), ...},
 </b> where action is in 
-{Pickup, Dropoff}. Pickup means the robot picks up the order id which starts at (x,y), 
-and Dropoff means the robot drops off the order id which ends at (x,y). 
+{Pickup, Dropoff}. Pickup means the robot picks up the order id which starts at node S, 
+and Dropoff means the robot drops off the order id which ends at node S. 
 
 For each order id, (S, Pickup, id) must be before (D, Dropoff, id) in the list.
 
 <b> 
-This output is correct if and only if, for each order (id, (S,D), w, t), 
+This output is correct if and only if, each order is picked up, and then dropped off at a later time, 
+  and for each order (id, (S,D), w, t), 
 the sum of weights the robot travels through from (S, Pickup, id) to (D, Dropoff, id) in the list is 
 less than or equal to 2*d(S,D) (i.e. the delivery time is less than the human round trip time, which 
 is just the time it takes a human walking from S to D and back to S), and at any point in time the 
