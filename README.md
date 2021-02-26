@@ -70,7 +70,8 @@ and then the user can create a `MultiorderNode` to process orders for a robot tr
 
 ### How it uses the algorithm 
 
-`MultiorderNode` will have an internal list of waiting orders and planned moves for those waiting orders. The actual planning acts as a two-stage planner. 
+`MultiorderNode` will have an internal list of waiting orders and planned moves for those waiting orders. The actual planning acts as a 2-stage batched planner, with the waiting orders list 
+acting as a first stage and the current moves list acting as a second stage. 
 
 Every time a new order comes in, the order will be added to the waiting orders list, and 
 once all the currently planned moves are done, the node will calculate the best path for 
@@ -78,7 +79,18 @@ processing those waiting orders.
 
 The order flow is like this:
 
-Order goes to the `MultiorderNode` -> `waitingOrders_` -> `plannedMoves_` -> robot carries out the move. 
+Order goes to the `MultiorderNode` -> order sits in `waitingOrders_` until `plannedMoves_` 
+is empty -> order is processed, gets planned out in `plannedMoves_` -> 
+robot carries out the moves to pick up and deliver the order.
+
+<b>Why do a batched planner when you can just recalculate with every new order?</b> 
+The problem with replanning is that you can only change the current moves when the robot 
+is not in the middle of the order, i.e. it's picked up an order already. The robot can 
+have nested orders, and once it picks up an order the algorithm cannot recalculate with 
+a half-finished order. 
+
+Then, the only way to do this given that the algorithm only takes in whole orders 
+is to replan once the current "batch" of orders are done. 
 
 ### Input topic (from user)
 
