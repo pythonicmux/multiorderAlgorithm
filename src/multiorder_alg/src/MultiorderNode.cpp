@@ -4,14 +4,13 @@ namespace Multiorder {
 
 MultiorderNode::MultiorderNode(ros::NodeHandle& nodeHandle,
         std::map<int, std::set<int>>& neighbors, std::vector<std::vector<double>>& weights, 
-        int numNodes, double capacity, int robotStartNode) :
+        int numNodes, double capacity) :
     nh_(nodeHandle), neighbors_(neighbors), 
-    weights_(weights), numNodes_(numNodes), capacity_(capacity), 
-    robotStartNode_(robotStartNode) 
+    weights_(weights), numNodes_(numNodes), capacity_(capacity) 
 {
     // Check to make sure it's a valid graph. 
-    if (numNodes_ <= 0 || capacity <= 0.0 || robotStartNode_ > numNodes_ || 
-            robotStartNode_ < 0 || weights_.size() != numNodes_ || weights_[0].size() != numNodes || 
+    if (numNodes_ <= 0 || capacity <= 0.0 ||
+            weights_.size() != numNodes_ || weights_[0].size() != numNodes || 
             neighbors_.size() != numNodes) {
         ROS_ERROR("Invalid graph or robot state parameter passed into MultiorderNode.");
     }
@@ -93,7 +92,11 @@ void MultiorderNode::precalculateMinTravelTimes() {
 }
 
 
-std::vector<Move> MultiorderNode::calculateMultiorder(std::vector<Order> orders) {
+std::vector<Move> MultiorderNode::calculateMultiorder(std::vector<Order> orders, int robotStartNode) {
+    // Check that the robot starting point is valid. 
+    if (robotStartNode < 0 || robotStartNode > numNodes_) {
+        ROS_ERROR("Invalid robot starting node input.");
+    }
     // Check that all of the orders are valid. 
     for(auto order:orders) {
         if (order.w < 0 || order.S < 0 || order.S > numNodes_ || 
@@ -102,7 +105,7 @@ std::vector<Move> MultiorderNode::calculateMultiorder(std::vector<Order> orders)
         }
     }
     // Initialize the robot start state to the user's passed-in specification. 
-    Robot r(robotStartNode_, capacity_);
+    Robot r(robotStartNode, capacity_);
     // Give it the order list to search for a satisfactory plan. 
     for (Order o:orders) {
         r.remainingOrders.insert(o);

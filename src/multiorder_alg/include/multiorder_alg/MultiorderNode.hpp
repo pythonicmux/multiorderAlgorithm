@@ -1,5 +1,7 @@
 #pragma once
 
+#include "multiorder_alg/order.h"
+#include "multiorder_alg/waypoint.h"
 #include <ros/ros.h>
 #include <limits>
 #include <map>
@@ -63,7 +65,7 @@ public:
     // otherwise this constructor will throw an error.
     MultiorderNode(ros::NodeHandle& nodeHandle,
             std::map<int, std::set<int>>& neighbors, std::vector<std::vector<double>>& weights, 
-            int numNodes = 0, double capacity = 2.0, int robotStartNode = 0);
+            int numNodes = 0, double capacity = 2.0);
 
     virtual ~MultiorderNode();
 
@@ -73,11 +75,13 @@ public:
     // the time between picking up and dropping off each order id
     // is at most 2 * minTravelTimes_[S_id][D_id] (i.e. the minimum time it 
     // takes to go from S to D and back), and that the robot 
-    // never picks up more than its capacitys' worth of orders. 
+    // never picks up more than its capacitys' worth of orders. The 
+    // robot will start at node robotStartNode.
     //
-    // Each order must contain a valid source/destination node and a non-negative capacity. 
+    // Each order must contain a valid source/destination node and a non-negative capacity, 
+    // and robotStartNode must be a valid node. 
     // Otherwise, the algorithm will have undefined behavior. 
-    std::vector<Move> calculateMultiorder(std::vector<Order> orders);
+    std::vector<Move> calculateMultiorder(std::vector<Order> orders, int robotStartNode);
 
 private:
     ros::NodeHandle& nh_;
@@ -85,7 +89,6 @@ private:
     // Map and robot-defined constants, passed in by the programmer.
     const int numNodes_;
     const double capacity_;
-    const int robotStartNode_;
 
     // This has the neighbors of each node. A node has a neighbor iff 
     // the node and neighbor are connected directly by a road. 
