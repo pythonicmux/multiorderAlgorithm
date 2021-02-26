@@ -90,7 +90,9 @@ have nested orders, and once it picks up an order the algorithm cannot recalcula
 a half-finished order. 
 
 Then, the only way to do this given that the algorithm only takes in whole orders 
-is to replan once the current "batch" of orders are done. 
+is to replan once the current "batch" of orders are done, since we're guaranteed 
+that the robot has no orders that it's working on when we recalculate with our 
+waiting orders. 
 
 ### Input topic (from user)
 
