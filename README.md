@@ -2,7 +2,8 @@
 
 This is a proof-of-concept for an algorithm that will act as a global planner for an
 autonomous delivery robot (currently this is just a constraint satisfaction problem 
-until I find some kind of cost function to make it an optimization problem). 
+until I find some kind of cost function to make it an optimization problem). It also acts as 
+an online global planner that can service and plan orders for a robot to deliver. 
 I'm designing and implementing this for 18-500 ECE Senior Capstone at Carnegie Mellon, Spring 2021. 
 I'm on Team C9 (GrubTub). 
 
@@ -60,13 +61,32 @@ The robot can have nC1 + nC2 + ... nCn = 2^n possibilities for current orders, a
 elapsed delivery times, the complexity becomes max HRTT of any order*2^n = O(2^n). If this problem is NP-hard, which 
   it likely is, then this is the best complexity we can get for a solution (assuming P != NP).
 
-## API overview
+# API
 
-### `MultiOrderNode` class
+## `MultiOrderNode` class
 
 A user creates a graph and specifies a robot's starting location and weight capacity (to fit orders in), 
-and then the user can create a `MultiorderNode` to run the algorithm on the graph for any series of 
-valid orders. 
+and then the user can create a `MultiorderNode` to process orders for a robot travelling on this graph. 
+
+### How it uses the algorithm 
+
+`MultiorderNode` will have an internal list of waiting orders and planned moves for those waiting orders. 
+Every time a new order comes in 
+or the robot finishes a delivery, the node will update its planned moves to take into account the new order. 
+
+## Input topic (from user)
+
+`multiorder_alg::order` is a message type with fields for the 
+order id, starting node (the restaurant), destination node, and the weight. 
+
+## Input topic (from robot)
+
+TODO
+
+## Output topic (to robot)
+
+`multiorder_alg::waypoint` is a message type that tells the robot the node to go to 
+and the action to do (as a string). 
 
 ### `MultiorderNode::calculateMultiorder` 
 
