@@ -4,10 +4,13 @@ namespace Multiorder {
 
 MultiorderNode::MultiorderNode(ros::NodeHandle& nodeHandle,
         std::map<int, std::set<int>>& neighbors, std::vector<std::vector<double>>& weights, 
-        int numNodes, double capacity) :
+        int numNodes, double capacity, int robotStartNode) :
     nh_(nodeHandle), neighbors_(neighbors), 
-    weights_(weights), numNodes_(numNodes), capacity_(capacity) 
+    weights_(weights), numNodes_(numNodes), capacity_(capacity), robotLocation_(robotStartNode)
 {
+    // No moves yet. 
+    plannedMoves_ = std::vector<Move>{};
+    
     // Check to make sure it's a valid graph. 
     if (numNodes_ <= 0 || capacity <= 0.0 ||
             weights_.size() != numNodes_ || weights_[0].size() != numNodes || 
@@ -39,9 +42,31 @@ MultiorderNode::MultiorderNode(ros::NodeHandle& nodeHandle,
             ROS_INFO_STREAM("d(" << i << ", " << j << ") = " << minTravelTimes_[i][j] << "\n");
         }
     }
+
+    // Open a publisher for sending waypoints to the robot. 
+    cmdPub_ = nh_.advertise<multiorder_alg::waypoint>("/robot_waypoints", 1);
+    // Open a listener for receiving orders from the user. 
+    orderSub_ = nh_.subscribe<multiorder_alg::order>("/incoming_orders", 10, &MultiorderNode::orderCallback, this);
 }
 
+
 MultiorderNode::~MultiorderNode() {}
+
+
+void MultiorderNode::orderCallback(const multiorder_alg::order order) {
+    lock_.lock();
+    // Enqueue the order for processing.
+    waitingOrders_.push_back(Order(order.id, order.startNode, order.destNode, order.weight));
+
+    // If the batch of current moves is done, then start a new batch with all 
+    // of the waiting orders.
+    if(plannedMoves_.size() == 0) {
+        plannedMoves_ = calculateMultiorder(waitingOrders_, robotLocation_);
+        waitingOrders_ = std::vector<Order>{};
+    }
+    lock_.unlock();
+}
+
 
 void MultiorderNode::precalculateMinTravelTimes() {
     // Calculate the min travel times from this node 

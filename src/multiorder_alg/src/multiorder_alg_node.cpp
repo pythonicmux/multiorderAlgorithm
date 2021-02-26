@@ -159,10 +159,12 @@ int main(int argc, char** argv)
     Multiorder::MultiorderNode mn(nodeHandle, neighbors, weights, 
             7, 2.0);
 
-    // Test the multiorder algorithm. 
+    // Test the multiorder algorithm.
+    ROS_INFO_STREAM("Tests starting...\n");
     testEasy(mn);
     testMedium(mn);
     testImpossibleWeight(mn);
+    ROS_INFO_STREAM("Tests done. Ground station running.\n");
 
     ros::spin();
 

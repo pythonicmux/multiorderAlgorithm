@@ -5,6 +5,7 @@
 #include <ros/ros.h>
 #include <limits>
 #include <map>
+#include <mutex>
 #include <vector>
 
 namespace Multiorder {
@@ -55,7 +56,7 @@ struct Move {
 
 class MultiorderNode {
 public:
-    // Initialize a multiorder simulation with the specified map 
+    // Initialize a multiorder planner with the specified map 
     // and robot parameters. The robot state will reset to the 
     // specified initial state between each call to calculateMultiorder. 
     //
@@ -65,7 +66,7 @@ public:
     // otherwise this constructor will throw an error.
     MultiorderNode(ros::NodeHandle& nodeHandle,
             std::map<int, std::set<int>>& neighbors, std::vector<std::vector<double>>& weights, 
-            int numNodes = 0, double capacity = 2.0);
+            int numNodes = 0, double capacity = 2.0, int robotStartNode = 0);
 
     virtual ~MultiorderNode();
 
@@ -83,8 +84,40 @@ public:
     // Otherwise, the algorithm will have undefined behavior. 
     std::vector<Move> calculateMultiorder(std::vector<Order> orders, int robotStartNode);
 
+    // orderCallback proceses an order and queues it for processing. 
+    void orderCallback(const multiorder_alg::order order);
+
 private:
     ros::NodeHandle& nh_;
+    // cmdPub_ will send waypoints to the robot.
+    ros::Publisher cmdPub_;
+    // orderSub_ will listen for orders from the user. 
+    ros::Subscriber orderSub_;
+   
+
+
+    // ONLINE STATE VARIABLES TO PROCESS ORDERS / COMMAND ROBOT 
+
+    // There will be multiple callbacks modifying robotLocation_ 
+    // and plannedMoves_ so we need a lock to protect them. 
+    std::mutex lock_;
+
+    // A list of orders that the robot is currently fulfilling and 
+    // has not started delivering yet. These orders will start 
+    // being delivered once all the currently planned moves are done. 
+    std::vector<Order> waitingOrders_;
+
+    // An ordered list of the moves that the robot should do to 
+    // fulfill its orders on time. 
+    std::vector<Move> plannedMoves_;
+
+    // The next location of the robot, once it finishes its current 
+    // move. 
+    int robotLocation_;
+
+
+
+    // ALGORITHM FIELDS, CONSTANTS, STRUCTS
     
     // Map and robot-defined constants, passed in by the programmer.
     const int numNodes_;
