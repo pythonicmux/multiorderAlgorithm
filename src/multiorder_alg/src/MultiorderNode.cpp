@@ -62,7 +62,7 @@ void MultiorderNode::orderCallback(const multiorder_alg::order order) {
     // of the waiting orders.
     if(plannedMoves_.size() == 0) {
         plannedMoves_ = calculateMultiorder(waitingOrders_, robotLocation_);
-        waitingOrders_ = std::vector<Order>{};
+        waitingOrders_.clear();
     }
     lock_.unlock();
 }
