@@ -71,19 +71,18 @@ and then the user can create a `MultiorderNode` to process orders for a robot tr
 ### How it uses the algorithm 
 
 `MultiorderNode` will have an internal list of waiting orders and planned moves for those waiting orders. 
-Every time a new order comes in 
-or the robot finishes a delivery, the node will update its planned moves to take into account the new order. 
+Every time a new order comes iy, the node will update its planned moves to take into account the new order. 
 
-## Input topic (from user)
+### Input topic (from user)
 
 `multiorder_alg::order` is a message type with fields for the 
 order id, starting node (the restaurant), destination node, and the weight. 
 
-## Input topic (from robot)
+### Input topic (from robot)
 
 TODO
 
-## Output topic (to robot)
+### Output topic (to robot)
 
 `multiorder_alg::waypoint` is a message type that tells the robot the node to go to 
 and the action to do (as a string). 
