@@ -70,8 +70,15 @@ and then the user can create a `MultiorderNode` to process orders for a robot tr
 
 ### How it uses the algorithm 
 
-`MultiorderNode` will have an internal list of waiting orders and planned moves for those waiting orders. 
-Every time a new order comes iy, the node will update its planned moves to take into account the new order. 
+`MultiorderNode` will have an internal list of waiting orders and planned moves for those waiting orders. The actual planning acts as a two-stage planner. 
+
+Every time a new order comes in, the order will be added to the waiting orders list, and 
+once all the currently planned moves are done, the node will calculate the best path for 
+processing those waiting orders.
+
+The order flow is like this:
+
+Order goes to the `MultiorderNode` -> `waitingOrders_` -> `plannedMoves_` -> robot carries out the move. 
 
 ### Input topic (from user)
 
@@ -80,7 +87,8 @@ order id, starting node (the restaurant), destination node, and the weight.
 
 ### Input topic (from robot)
 
-TODO
+TODO this input will give the robot's location and signify that the robot has gotten to 
+its current waypoint. 
 
 ### Output topic (to robot)
 
