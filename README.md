@@ -61,7 +61,7 @@ The robot can have nC1 + nC2 + ... nCn = 2^n possibilities for current orders, a
 elapsed delivery times, the complexity becomes max HRTT of any order*2^n = O(2^n). If this problem is NP-hard, which 
   it likely is, then this is the best complexity we can get for a solution (assuming P != NP).
 
-# API
+# ROS Planning Node Specification/API
 
 ## `MultiOrderNode` class
 
