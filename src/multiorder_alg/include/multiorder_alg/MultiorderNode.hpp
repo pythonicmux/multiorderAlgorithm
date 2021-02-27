@@ -14,8 +14,9 @@ namespace Multiorder {
 class MultiorderNode {
 public:
     // Initialize a multiorder planner with the specified map 
-    // and robot parameters. The robot state will reset to the 
-    // specified initial state between each call to calculateMultiorder. 
+    // and robot parameters. It keeps track of the robot location 
+    // between each order and uses the multiorder solver to plan 
+    // "moves", i.e. waypoints and actions, for the robot. 
     //
     // The graph and robot state passed in must be valid: 
     // numNodes/capacity must be greater than 0, weights must be length [numNodes][numNodes], 

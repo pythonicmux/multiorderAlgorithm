@@ -57,9 +57,8 @@ struct Move {
 
 class MultiorderSolver {
 public:
-    // Initialize a multiorder planner with the specified map 
-    // and robot parameters. The robot state will reset to the 
-    // specified initial state between each call to calculateMultiorder. 
+    // Initialize a multiorder algorithm solver with the specified map 
+    // and robot parameters. 
     //
     // The graph and robot state passed in must be valid: 
     // numNodes/capacity must be greater than 0, weights must be length [numNodes][numNodes], 
