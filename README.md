@@ -29,10 +29,13 @@ at the same location, if they all fit. We assume pickups and dropoffs take 0 tim
 <b> 
 The output must be an ordered list {(S, action, id), ...},
 </b> where action is in 
-{Pickup, Dropoff}. Pickup means the robot picks up the order id which starts at node S, 
-and Dropoff means the robot drops off the order id which ends at node S. 
+{Pickup, Dropoff, Transit}. Pickup means the robot picks up the order id which starts at node S, 
+and Dropoff means the robot drops off the order id which ends at node S. Transit means that 
+this move is to an intermediate node that is on the way to processing order id in some way.
 
-For each order id, (S, Pickup, id) must be before (D, Dropoff, id) in the list.
+For each order id, (S, Pickup, id) must be before (D, Dropoff, id) in the list, and between 
+each Pickup and Dropoff there must be a valid sequence of Transit moves to get to the node via 
+the edges of the graph. 
 
 <b> 
 This output is correct if and only if, each order is picked up, and then dropped off at a later time, 
@@ -60,13 +63,58 @@ all current robot locations, and the backtracking algorithm will need to search 
 The robot can have nC1 + nC2 + ... nCn = 2^n possibilities for current orders, and taking into account the different 
 elapsed delivery times, the complexity becomes max HRTT of any order*2^n = O(2^n). If this problem is NP-hard, which 
   it likely is, then this is the best complexity we can get for a solution (assuming P != NP).
+  
+
+  
+# Algorithm API `MultiorderSolver`
+
+## `MultiorderSolver`
+
+This class represents an instantiable multiorder solver that takes in a weighted, undirected graph to 
+solve batches of orders on. The user supplies the graph and the robot capacity in the constructor, and 
+can repeatedly give the solver batches of orders to solve and find a satisfactory path for.
+
+### `MultiorderSolver::calculateMultiorder` 
+
+This function is the multiorder algorithm. It takes in a list of `Order`s and the robot's starting location 
+and will output an ordered vector of `Move`s that the robot 
+can do to deliver all the `Order`s on time and with the weight limitations of the robot, 
+if possible. It also outputs all the intermediate "transits" the robot has to do, i.e. 
+the entire path the robot has to take. If it's impossible, the algorithm returns an empty vector. 
+
+### `Order` struct
+
+An algo input specifying that order `id` will be `w` kg and go from node `S` to node `D` following 
+the weighted edges ("time to travel across the edge") of the graph.
+Contains a unique order ID, source node, destination node, and the weight of the order. 
+The weight can be heavier than the capacity of the robot, but it will lead to the algorithm 
+returning no solution. 
+
+From the problem definition, the algorithm must be able to find a solution such that 
+this order, from picking it up to dropping it off, will take no longer than 
+2 * the minimum travel time from `S` to `D`, and the robot cannot take this order 
+if its current remaining capacity is less than`w`. 
+
+### `Move` struct
+
+An algo output specifying a move that the robot takes in delivering the input 
+orders, where the robot goes to `node` and does `action` for order `id`. 
+
+
 
 # ROS Planning Node Specification/API
 
-## `MultiOrderNode` class
+## `MultiorderNode` class
 
-A user creates a graph and specifies a robot's starting location and weight capacity (to fit orders in), 
-and then the user can create a `MultiorderNode` to process orders for a robot travelling on this graph. 
+`MultiorderNode` is the global planner for the robot that runs on the ground station and processes incoming orders in batches. 
+A user creates a graph and specifies a robot's starting location and capacity, 
+and then the user can create a `MultiorderNode` to process orders online for a robot travelling on this graph. The 
+`MultiorderNode` is a ROS node that takes in live orders and then sends waypoints to the robot to fulfill these 
+orders on-time, if possible. It batches the orders since the algorithm can only run when the robot does not have 
+any partially completed orders. 
+
+If there's no path that meets the timing requirement then the node will throw an error. TODO This may be changed 
+to an optimization problem later, in which case the node will output the best possible path and throw a warning.
 
 ### How it does planning for online orders in batches
 
@@ -109,36 +157,16 @@ its current waypoint.
 `multiorder_alg::waypoint` is a message type that tells the robot the node to go to 
 and the action to do (as a string). 
 
-### `MultiorderNode::calculateMultiorder` 
-
-This function is the multiorder algorithm. It takes in a list of `Order`s and will output an 
-ordered vector of `Move`s that the robot 
-can do to deliver all the `Order`s on time and with the weight limitations of the robot, 
-if possible. If it's impossible, the algorithm returns an empty vector. 
-
-### `Order` struct
-
-An algo input specifying that order `id` will be `w` kg and go from node `S` to node `D` following 
-the weighted edges ("time to travel across the edge") of the graph.
-Contains a unique order ID, source node, destination node, and the weight of the order. 
-The weight can be heavier than the capacity of the robot, but it will lead to the algorithm 
-returning no solution. 
-
-From the problem definition, the algorithm must be able to find a solution such that 
-this order, from picking it up to dropping it off, will take no longer than 
-2 * the minimum travel time from `S` to `D`, and the robot cannot take this order 
-if its current remaining capacity is less than`w`. 
-
-### `Move` struct
-
-An algo output specifying a move that the robot takes in delivering the input 
-orders, where the robot goes to `node` and does `action` for order `id`. 
 
 ## File overview
 
+### `src/multiorder_node/include/MultiorderSolver.hpp` 
+
+contains the ROS API that has the multiorder algorithm.
+
 ### `src/multiorder_node/include/MultiorderNode.hpp` 
 
-contains the ROS internal node and API that faciliates the multiorder algorithm. 
+contains the ROS node that faciliates online order processing and robot planning.
 
 ### `src/multiorder_node/src/multiorder_alg_node.cpp` 
 is the high-level ROS node that instantiates a `MultiorderNode` and tests it with a graph of CMU. 
@@ -150,9 +178,11 @@ It just runs some unit tests to make sure the algorithm works.
 
 Make sure you have ROS Melodic installed on your computer. 
 
+Install it at http://wiki.ros.org/melodic/Installation/Ubuntu
+
 To build:
 ```
-catkin clean; catkin build; source devel/<your shell>.sh
+catkin init; catkin clean; catkin build; source devel/<your shell>.sh
 ```
 
 To run the tests:
