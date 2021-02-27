@@ -102,7 +102,7 @@ orders, where the robot goes to `node` and does `action` for order `id`.
 
 
 
-# ROS Planning Node Specification/API
+# ROS Global Planner Node 
 
 ## `MultiorderNode` class
 
