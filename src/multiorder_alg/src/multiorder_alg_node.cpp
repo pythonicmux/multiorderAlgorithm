@@ -85,7 +85,7 @@ void testEasy(Multiorder::MultiorderNode& mn)
     input.push_back(Multiorder::Order(1, 2, 3, 0.5));
     input.push_back(Multiorder::Order(2, 5, 6, 2.0));
 
-    auto sol = mn.calculateMultiorder(input, 0);
+    auto sol = mn.solver.calculateMultiorder(input, 0);
 
     if(sol.size() == 0) {
         ROS_ERROR("testEasy failed\n");
@@ -114,7 +114,7 @@ void testMedium(Multiorder::MultiorderNode& mn)
     input.push_back(Multiorder::Order(4, 4, 2, 0.7));
     input.push_back(Multiorder::Order(5, 4, 3, 2.0));
 
-    auto sol = mn.calculateMultiorder(input, 4);
+    auto sol = mn.solver.calculateMultiorder(input, 4);
 
     if(sol.size() == 0) {
         ROS_ERROR("testMedium failed\n");
@@ -137,7 +137,7 @@ void testImpossibleWeight(Multiorder::MultiorderNode& mn)
     std::vector<Multiorder::Order> input;
     input.push_back(Multiorder::Order(0, 0, 1, 2.1));
 
-    auto sol = mn.calculateMultiorder(input, 0);
+    auto sol = mn.solver.calculateMultiorder(input, 0);
 
     if(sol.size() == 0) {
         ROS_INFO_STREAM("testImpossibleWeight failed as intended\n");
@@ -155,7 +155,7 @@ int main(int argc, char** argv)
     initializeCMU();
 
     // Initialize the multiorder node with the map of CMU, with 
-    // 7 nodes, a capacity of 2kg, and starting at node 0. 
+    // 7 nodes, a capacity of 2kg, and starting at node 0 (default). 
     Multiorder::MultiorderNode mn(nodeHandle, neighbors, weights, 
             7, 2.0);
 
