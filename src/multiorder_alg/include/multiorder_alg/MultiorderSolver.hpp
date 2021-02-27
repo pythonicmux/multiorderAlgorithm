@@ -13,7 +13,7 @@ namespace Multiorder {
 // The actions the robot can take at each node 
 // when processing orders. Either pickup, dropoff, 
 // or just in transit. 
-enum Actions { PICKUP, DROPOFF, TRAVEL };
+enum Actions { PICKUP, DROPOFF, TRANSIT };
 
 // The definition of an "order" that the algorithm 
 // must process. 
@@ -70,7 +70,7 @@ public:
     virtual ~MultiorderSolver();
 
     // calculateMultiorder will print out a satisfactory 
-    // order of nodes to go to and actions to perform at each 
+    // order of nodes to go to following the edges and actions to perform at each 
     // node in order to deliver all orders, and make sure that 
     // the time between picking up and dropping off each order id
     // is at most 2 * minTravelTimes_[S_id][D_id] (i.e. the minimum time it 
@@ -102,6 +102,10 @@ private:
     // This maps each pair of points to the minimum travel time 
     // between them (i.e. the cost of the lowest-cost path between them).
     std::vector<std::vector<double>> minTravelTimes_;
+    // This contains the shortest paths between i and j for all nodes i and 
+    // j, and the paths DO NOT contain the start and end vertices i and j.
+    std::vector<std::vector<std::vector<int>>> shortestPaths_;
+
     // This will calculate minTravelTimes_ with the pairwise minimum 
     // travel time between each pair of nodes.
     void precalculateMinTravelTimes();

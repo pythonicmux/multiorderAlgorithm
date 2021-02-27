@@ -77,6 +77,20 @@ void initializeCMU() {
     weights[6][5] = 39.59;
 }
 
+void printMoves(std::vector<Multiorder::Move> sol) {
+    for(auto move:sol) {
+        if(move.action == Multiorder::DROPOFF) {
+            ROS_INFO_STREAM("Dropping off order " << move.id << " at node " << move.node);
+        } else if (move.action == Multiorder::PICKUP) {
+            ROS_INFO_STREAM("Picking up order " << move.id << " at node " << move.node);
+        } else if (move.action == Multiorder::TRANSIT) {
+            ROS_INFO_STREAM("In transit at node " << move.node);
+        } else {
+            ROS_ERROR("Invalid move detected in the sequence of moves.");
+        }
+    }
+}
+
 // An easy test with disjoint 2-node paths.
 void testEasy(Multiorder::MultiorderNode& mn) 
 {
@@ -90,13 +104,7 @@ void testEasy(Multiorder::MultiorderNode& mn)
     if(sol.size() == 0) {
         ROS_ERROR("testEasy failed\n");
     } else {
-        for(auto move:sol) {
-            if(move.action == Multiorder::DROPOFF) {
-                ROS_INFO_STREAM("Dropping off order " << move.id << " at " << move.node);
-            } else {
-                ROS_INFO_STREAM("Picking up order " << move.id << " at " << move.node);
-            }
-        }
+        printMoves(sol);
 
         ROS_INFO_STREAM("testEasy passed\n");
     }
@@ -119,15 +127,29 @@ void testMedium(Multiorder::MultiorderNode& mn)
     if(sol.size() == 0) {
         ROS_ERROR("testMedium failed\n");
     } else {
-        for(auto move:sol) {
-            if(move.action == Multiorder::DROPOFF) {
-                ROS_INFO_STREAM("Dropping off order " << move.id << " at " << move.node);
-            } else {
-                ROS_INFO_STREAM("Picking up order " << move.id << " at " << move.node);
-            }
-        }
+        printMoves(sol);
 
         ROS_INFO_STREAM("testMedium passed\n");
+    }
+}
+
+// Test that the intermediate path between the furthest-away 
+// nodes is correct. Two orders, 3 to 4 and 4 to 3. The robot 
+// should correctly find the shortest path from 3 to 4.
+void testIntermediatePath(Multiorder::MultiorderNode& mn) 
+{
+    std::vector<Multiorder::Order> input;
+    input.push_back(Multiorder::Order(0, 4, 3, 0.7));
+    input.push_back(Multiorder::Order(1, 3, 4, 1.0));
+
+    auto sol = mn.solver.calculateMultiorder(input, 0);
+
+    if(sol.size() == 0) {
+        ROS_ERROR("testIntermediatePath failed\n");
+    } else {
+        printMoves(sol);
+
+        ROS_INFO_STREAM("testIntermediatePath passed\n");
     }
 }
 
@@ -142,6 +164,7 @@ void testImpossibleWeight(Multiorder::MultiorderNode& mn)
     if(sol.size() == 0) {
         ROS_INFO_STREAM("testImpossibleWeight failed as intended\n");
     } else {
+        printMoves(sol);
         ROS_ERROR("testImpossibleWeight passed when it shouldn't\n");
     }
 }
@@ -163,6 +186,7 @@ int main(int argc, char** argv)
     ROS_INFO_STREAM("Tests starting...\n");
     testEasy(mn);
     testMedium(mn);
+    testIntermediatePath(mn);
     testImpossibleWeight(mn);
     ROS_INFO_STREAM("Tests done. Ground station running.\n");
 

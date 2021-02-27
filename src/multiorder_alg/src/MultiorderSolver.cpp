@@ -45,6 +45,11 @@ MultiorderSolver::MultiorderSolver(
 MultiorderSolver::~MultiorderSolver() {}
 
 void MultiorderSolver::precalculateMinTravelTimes() {
+    // Keep track of the predecessors for the shortest 
+    // path for each node (shortest paths are made by 
+    // composition so d(u,v) + d(v,w) = d(u,w)) 
+    int p[numNodes_][numNodes_];
+    
     // Calculate the min travel times from this node 
     // with Dijkstra's algorithm.
     for(int source = 0; source < numNodes_; source++) {
@@ -54,6 +59,7 @@ void MultiorderSolver::precalculateMinTravelTimes() {
 
         for(int i = 0; i < numNodes_; i++) {
             minTravelTimes_[source][i] = DBL_MAX;
+            p[source][i] = -1;
         }
         minTravelTimes_[source][source] = 0;
 
@@ -82,10 +88,31 @@ void MultiorderSolver::precalculateMinTravelTimes() {
                         minTravelTimes_[source][nbr]) {
                     minTravelTimes_[source][nbr] = minTravelTimes_[source][closest] + 
                         weights_[closest][nbr];
+                    p[source][nbr] = closest; 
                 }
 
                 if (weights_[closest][nbr] < 0.0) {
                     ROS_ERROR("Dijkstra's found that a neighbor has negative weight.");
+                }
+            } 
+        }
+    }
+    
+    // Record the shortest pairwise paths. i is the source, j is the 
+    // destination. 
+    for(int i = 0; i < numNodes_; i++) {
+        shortestPaths_.push_back(std::vector<std::vector<int>>{});
+        for(int j = 0; j < numNodes_; j++) {
+            shortestPaths_[i].push_back(std::vector<int>{});
+            if (i != j) {
+                // Go from p[j][i] to p[j][j] to get the path, not 
+                // including the start and end nodes.
+                int curr = i;
+                while(curr != j) {
+                    curr = p[j][curr];
+                    if(curr != j) {
+                        shortestPaths_[i][j].push_back(curr);
+                    }
                 }
             } 
         }
@@ -151,6 +178,11 @@ std::vector<Move> MultiorderSolver::calculateMultiorder(Robot r) {
             next.deliveryTimes[order] = 0.0;
             next.remainingCapacity -= order.w;
 
+            // Add all nodes to travel to before reaching the order pickup node. 
+            for(int node:shortestPaths_[r.location][order.S]) {
+                next.moves.push_back(Move{node, TRANSIT, order.id});
+            }
+            // Pick up the order at the order's starting point.
             next.moves.push_back(Move{order.S, PICKUP, order.id});
 
             // See if this next state yields a solution.
@@ -175,6 +207,11 @@ std::vector<Move> MultiorderSolver::calculateMultiorder(Robot r) {
         next.deliveryTimes.erase(order);
         next.remainingCapacity += order.w;
 
+        // Add all nodes to travel to before reaching the order dropoff node. 
+        for(int node:shortestPaths_[r.location][order.D]) {
+            next.moves.push_back(Move{node, TRANSIT, order.id});
+        }
+        // Pick up the order at the order's dropoff point.
         next.moves.push_back(Move{order.D, DROPOFF, order.id});
 
         // See if this next state yields a solution.
