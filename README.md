@@ -68,7 +68,7 @@ elapsed delivery times, the complexity becomes max HRTT of any order*2^n = O(2^n
 A user creates a graph and specifies a robot's starting location and weight capacity (to fit orders in), 
 and then the user can create a `MultiorderNode` to process orders for a robot travelling on this graph. 
 
-### How it uses the algorithm 
+### How it does planning for online orders in batches
 
 `MultiorderNode` will have an internal list of waiting orders and planned moves for those waiting orders. The actual planning acts as a 2-stage batched planner, with the waiting orders list 
 acting as a first stage and the current moves list acting as a second stage. 
