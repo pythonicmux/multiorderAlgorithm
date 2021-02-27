@@ -1,11 +1,8 @@
 #pragma once
 
-#include "multiorder_alg/order.h"
-#include "multiorder_alg/waypoint.h"
 #include <ros/ros.h>
 #include <limits>
 #include <map>
-#include <mutex>
 #include <vector>
 
 namespace Multiorder {
@@ -82,9 +79,6 @@ public:
     // and robotStartNode must be a valid node. 
     // Otherwise, the algorithm will have undefined behavior. 
     std::vector<Move> calculateMultiorder(std::vector<Order> orders, int robotStartNode);
-
-    // orderCallback proceses an order and queues it for processing. 
-    void orderCallback(const multiorder_alg::order order);
 
 private:
     // Map and robot-defined constants, passed in by the programmer.

@@ -4,7 +4,6 @@
 #include "multiorder_alg/waypoint.h"
 #include "multiorder_alg/MultiorderSolver.hpp"
 #include <ros/ros.h>
-#include <limits>
 #include <map>
 #include <mutex>
 #include <vector>
