@@ -66,9 +66,9 @@ elapsed delivery times, the complexity becomes max HRTT of any order*2^n = O(2^n
   
 
   
-# Algorithm API `MultiorderSolver`
+# Algorithm API
 
-## `MultiorderSolver`
+## `MultiorderSolver` class
 
 This class represents an instantiable multiorder solver that takes in a weighted, undirected graph to 
 solve batches of orders on. The user supplies the graph and the robot capacity in the constructor, and 
