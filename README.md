@@ -9,10 +9,10 @@ I'm on Team C9 (GrubTub).
 
 ## The problem is as follows:
 
-The robot has a total capacity of C, and is at node S in an undirected, weighted graph. The 
+The robot has a total capacity of C, and is at node S in an undirected, weighted graph G=(V,E). The 
 weight of an edge corresponds with the time the robot takes to travel across the edge.
 
-We also get a function d(S,D) that can compute the shortest distance of any path from S to D for any two 
+We also precompute shortest paths over G to get a function d(S,D) that can compute the shortest distance of any path from S to D for any two 
 nodes in the graph S and D.
 
 The input is a list of orders {(id, (S,D), w), ...}. 
