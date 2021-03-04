@@ -1,5 +1,8 @@
 #include <ros/ros.h>
 #include <multiorder_alg/MultiorderNode.hpp>
+#include "multiorder_alg/order.h"
+#include "multiorder_alg/robotStatus.h"
+#include "multiorder_alg/waypoint.h"
 #include <set>
 #include <vector>
 
