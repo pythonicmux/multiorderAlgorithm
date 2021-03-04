@@ -45,6 +45,7 @@ void MultiorderNode::orderCallback(const multiorder_alg::order order) {
     if(plannedMoves_.size() == 0) {
         plannedMoves_ = solver.calculateMultiorder(waitingOrders_, robotLocation_);
         waitingOrders_.clear();
+        ROS_INFO_STREAM("Current batch of moves finished, making new batch\n");
 
         multiorder_alg::waypoint w;
         w.nextNode = plannedMoves_[0].node;
@@ -65,8 +66,6 @@ void MultiorderNode::robotStatusCallback(const multiorder_alg::robotStatus statu
     ROS_INFO("Received robot status, robot is at %d\n", status.locationNode);
     lock_.lock();
         
-    multiorder_alg::waypoint w;
-
     // If the robot is at the wrong location then throw an error. 
     if(robotLocation_ != status.locationNode) {
         ROS_ERROR("Robot is at wrong location %d, should have gone to %d for %s\n", 
@@ -82,10 +81,12 @@ void MultiorderNode::robotStatusCallback(const multiorder_alg::robotStatus statu
         if(plannedMoves_.size() == 0 && waitingOrders_.size() > 0) {
             plannedMoves_ = solver.calculateMultiorder(waitingOrders_, robotLocation_);
             waitingOrders_.clear();
+            ROS_INFO_STREAM("Current batch of moves finished, making new batch\n");
         }
 
         // Send the robot another waypoint if there is one. 
         if(plannedMoves_.size() > 0) {
+            multiorder_alg::waypoint w;
             w.nextNode = plannedMoves_[0].node;
             w.action = moveToString_[plannedMoves_[0].action];
             cmdPub_.publish(w);
@@ -97,12 +98,14 @@ void MultiorderNode::robotStatusCallback(const multiorder_alg::robotStatus statu
                 plannedMoves_[0].node, 
                 moveToString_[plannedMoves_[0].action].c_str());
         } else {
+            // If there's no orders or moves then the robot is idle until 
+            // a new order comes in. 
             if (plannedMoves_.size() || waitingOrders_.size()) {
                 ROS_ERROR("Should be no more moves or orders at this \ 
                         block of code but there are.");
             }
             ROS_INFO("Ground station has no more moves or orders, robot will \ 
-                    be idle until new orders come in.\n");
+                    be idle at %d until new orders come in.\n", robotLocation_);
         }
     }
 
