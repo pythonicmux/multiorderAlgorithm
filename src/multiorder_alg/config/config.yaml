@@ -1,2 +1,1 @@
-topic_name: /scan
-queue_size: 10
+robot_start_node: 0

@@ -169,6 +169,56 @@ void testImpossibleWeight(Multiorder::MultiorderNode& mn)
     }
 }
 
+
+// Immediate "goes to" all waypoints it gets.
+class TestRobotNode {
+public:
+    TestRobotNode(ros::NodeHandle& nodeHandle) : nh_(nodeHandle) {
+        // Create robot status publisher and waypoint listener. 
+        sPub_ = nh_.advertise<multiorder_alg::robotStatus>("/robot_status", 10);
+        wSub_ = nh_.subscribe<multiorder_alg::waypoint>("/robot_waypoints", 10, 
+                &TestRobotNode::sendBackLocation, this); 
+        ROS_INFO("Test robot up\n");
+    }
+
+    ~TestRobotNode() {} 
+
+    void sendBackLocation(const multiorder_alg::waypoint waypoint) {
+        ROS_INFO("Test robot got waypoint to go to %d for %s\n", 
+                waypoint.nextNode, waypoint.action.c_str());
+        multiorder_alg::robotStatus rs;
+        rs.locationNode = waypoint.nextNode;
+        sPub_.publish(rs);
+    }
+
+private:
+    ros::NodeHandle& nh_;
+    ros::Publisher sPub_;
+    ros::Subscriber wSub_;
+};
+
+
+// Give the robot a bunch of orders to pick up from each node 
+// on the map and deliver to 
+// the dest node. Simulates the actual multiorder node.  
+void groundStationTest(ros::NodeHandle& nh, int destNode) { 
+    // Create an order publisher.
+    ros::Publisher oPub = nh.advertise<multiorder_alg::order>("/incoming_orders", 10);
+
+    // Create some orders that all go to this destination node.
+    for(int i = 0; i < 7; i++) {
+        multiorder_alg::order msg;
+        msg.id = i;
+        msg.startNode = i;
+        msg.destNode = destNode;
+        msg.weight = 0.5;
+        oPub.publish(msg);
+        ROS_INFO("Sent order %d, going from %d to %d with weight %f\n", 
+                msg.id, msg.startNode, destNode, msg.weight);
+    }
+}
+
+
 int main(int argc, char** argv) 
 {
     ros::init(argc, argv, "multiorder_alg_node");
@@ -176,19 +226,32 @@ int main(int argc, char** argv)
 
     // Initialize the graph of CMU to pass in. 
     initializeCMU();
+    
+    // Get the starting node.
+    int robotStartNode = 0;
+    if(nodeHandle.getParam(ros::this_node::getNamespace() + ros::this_node::getName() + 
+                "/robot_start_node", robotStartNode) == false) {
+        ROS_ERROR("Could not get robot starting node.");
+    }
 
     // Initialize the multiorder node with the map of CMU, with 
-    // 7 nodes, a capacity of 2kg, and starting at node 0 (default). 
+    // 7 nodes, a capacity of 2kg, and starting at the node 0 for tests.
     Multiorder::MultiorderNode mn(nodeHandle, neighbors, weights, 
-            7, 2.0);
+            7, 2.0, robotStartNode);
 
-    // Test the multiorder algorithm.
+    // Test the multiorder algorithm. 
     ROS_INFO_STREAM("Tests starting...\n");
     testEasy(mn);
     testMedium(mn);
     testIntermediatePath(mn);
     testImpossibleWeight(mn);
-    ROS_INFO_STREAM("Tests done. Ground station running.\n");
+
+    // COMMENT THIS OUT WHEN TESTING - TESTROBOTNODE 
+    // PUBLISHES THINGS.
+    TestRobotNode testRobot(nodeHandle);
+    groundStationTest(nodeHandle, robotStartNode);
+
+    ROS_INFO_STREAM("...tests done. Ready for operation.\n");
 
     ros::spin();
 
