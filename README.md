@@ -2,8 +2,8 @@
 
 This is a proof-of-concept for an algorithm that will act as a global planner for an
 autonomous delivery robot (currently this is just a constraint satisfaction problem 
-until I find some kind of cost function to make it an optimization problem). It also acts as 
-an online global planner that can service and plan orders for a robot to deliver. 
+until I find some kind of cost function to make it an optimization problem). I've also implemented 
+an online global planner that uses this algorithm, which can service and plan orders for a robot to deliver. 
 I'm designing and implementing this for 18-500 ECE Senior Capstone at Carnegie Mellon, Spring 2021. 
 I'm on Team C9 (GrubTub). 
 
@@ -106,7 +106,9 @@ orders, where the robot goes to `node` and does `action` for order `id`.
 
 ## `MultiorderNode` class
 
-`MultiorderNode` is the global planner for the robot that runs on the ground station and processes incoming orders in batches. 
+`MultiorderNode` is the global planner for the robot that runs on the ground station and processes incoming orders into 
+moves in batches, sending the moves to the robot one-by-one. 
+
 A user creates a graph and specifies a robot's starting location and capacity, 
 and then the user can create a `MultiorderNode` to process orders online for a robot travelling on this graph. The 
 `MultiorderNode` is a ROS node that takes in live orders and then sends waypoints to the robot to fulfill these 
@@ -142,6 +144,25 @@ is to replan once the current "batch" of orders are done, since we're guaranteed
 that the robot has no orders that it's working on when we recalculate with our 
 waiting orders. 
 
+### Flow of how the ground station and robot interact
+
+Ground station initializes.
+
+Gets the first order, calculates the moves, and sends it immediately to the robot. 
+Robot starts going to the first pickup, edge by edge. As it goes, more orders can 
+come in and join the waitingOrders_ list.
+
+The robot arrives and sends its status to the ground station, and the ground station 
+sends the next waypoint/move for the robot to go to. 
+
+...this repeats until the batch of moves is exhausted. 
+
+Then, upon the last move getting removed, the ground station takes all waiting orders 
+and plans those out into moves. It repeats.
+
+...this repeats until all orders are finished, and the robot does its last move 
+and idles until more orders come in. 
+
 ### Input topic (from user)
 
 `multiorder_alg::order` is a message type with fields for the 
@@ -149,8 +170,7 @@ order id, starting node (the restaurant), destination node, and the weight.
 
 ### Input topic (from robot)
 
-TODO this input will give the robot's location and signify that the robot has gotten to 
-its current waypoint. 
+`multiorder_alg::robotStatus` is a message type that gets the robot's location. 
 
 ### Output topic (to robot)
 
@@ -170,6 +190,7 @@ contains the ROS node that faciliates online order processing and robot planning
 
 ### `src/multiorder_node/src/multiorder_alg_node.cpp` 
 is the high-level ROS node that instantiates a `MultiorderNode` and tests it with a graph of CMU. 
+It does solver tests for the algorithms and an involved ground station test. 
 
 ## To run
 
