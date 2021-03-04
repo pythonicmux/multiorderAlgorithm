@@ -3,6 +3,8 @@
 #include <set>
 #include <vector>
 
+//// CMU TEST MAP
+
 static const int numNodes = 7;
 std::map<int, std::set<int>> neighbors;
 std::vector<std::vector<double>> weights;
@@ -91,6 +93,8 @@ void printMoves(std::vector<Multiorder::Move> sol) {
     }
 }
 
+//// ALGORITHM TESTS
+
 // An easy test with disjoint 2-node paths.
 void testEasy(Multiorder::MultiorderNode& mn) 
 {
@@ -169,6 +173,7 @@ void testImpossibleWeight(Multiorder::MultiorderNode& mn)
     }
 }
 
+//// GROUND STATION TESTS
 
 // Immediate "goes to" all waypoints it gets.
 class TestRobotNode {
