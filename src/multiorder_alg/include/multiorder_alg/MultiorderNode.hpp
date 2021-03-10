@@ -77,9 +77,9 @@ private:
     // the robot is executing. This is -1 if the robot is idle.
     int currentMove_;
 
-    // The next location of the robot, once it finishes its current 
-    // move, plannedMoves_[0], or it's the current location 
-    // and there are no planned moves. 
+    // The current location of the robot most recently sent by 
+    // a heartbeat (multiorder_alg::robotStatus), set in 
+    // the robotStatusCallback function.
     int robotLocation_;
     
     // Map and robot-defined constants, passed in by the programmer.
