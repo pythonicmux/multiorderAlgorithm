@@ -197,7 +197,7 @@ It does solver tests for the algorithms and an involved ground station test that
 a simulated `TestRobot` which drives around the graph. 
 
 ### `src/multiorder_node/src/multiorder_alg_node.cpp`
-is a high level ROS main that instantiates a `MultiorderNode` with a graph of CMU and does nothing. 
+is a high-level ROS main that instantiates a `MultiorderNode` with a graph of CMU and does nothing. 
 It's meant as a blank template for actual production. 
 
 ## To run
