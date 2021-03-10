@@ -154,9 +154,10 @@ Robot starts going to the first pickup, edge by edge. It sends heartbeats to the
 ground station, and the ground station keeps track of which moves it completes based 
 on its location. As it goes, more orders can come in and join the waitingOrders_ list.
 
-The robot arrives, sends a heartbeat with its location and the ground station 
-notes that the batch is done, takes all waiting orders into the algorithm,
-and plans those out into a new batch of moves. It repeats.
+The robot arrives at the dropoff eventually and sends a heartbeat with its location. 
+The ground station notes that the batch is done, takes all waiting orders into the algorithm,
+and plans those out into a new batch of moves. It sends the batch to the robot and 
+the process repeats.
 
 ...this repeats until all orders are finished, and the robot does its last move 
 and idles until more orders come in. 
