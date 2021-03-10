@@ -107,7 +107,8 @@ orders, where the robot goes to `node` and does `action` for order `id`.
 ## `MultiorderNode` class
 
 `MultiorderNode` is the global planner for the robot that runs on the ground station and processes incoming orders into 
-moves in batches, sending the moves to the robot one-by-one. 
+moves in batches, sending the moves to the robot in entire batches. It keeps track of which move in the batch 
+the robot is on based on its location, and calculates a new batch when the robot is done with the current batch. 
 
 A user creates a graph and specifies a robot's starting location and capacity, 
 and then the user can create a `MultiorderNode` to process orders online for a robot travelling on this graph. The 
@@ -148,17 +149,14 @@ waiting orders.
 
 Ground station initializes.
 
-Gets the first order, calculates the moves, and sends it immediately to the robot. 
-Robot starts going to the first pickup, edge by edge. As it goes, more orders can 
-come in and join the waitingOrders_ list.
+Gets the first order, calculates the moves, and sends the batch immediately to the robot. 
+Robot starts going to the first pickup, edge by edge. It sends heartbeats to the 
+ground station, and the ground station keeps track of which moves it completes based 
+on its location. As it goes, more orders can come in and join the waitingOrders_ list.
 
-The robot arrives and sends its status to the ground station, and the ground station 
-sends the next waypoint/move for the robot to go to. 
-
-...this repeats until the batch of moves is exhausted. 
-
-Then, upon the last move getting removed, the ground station takes all waiting orders 
-and plans those out into moves. It repeats.
+The robot arrives, sends a heartbeat with its location and the ground station 
+notes that the batch is done, takes all waiting orders into the algorithm,
+and plans those out into a new batch of moves. It repeats.
 
 ...this repeats until all orders are finished, and the robot does its last move 
 and idles until more orders come in. 
@@ -170,12 +168,16 @@ order id, starting node (the restaurant), destination node, and the weight.
 
 ### Input topic (from robot)
 
-`multiorder_alg::robotStatus` is a message type that gets the robot's location. 
+`multiorder_alg::robotStatus` is a message type that represents a robot heartbeat 
+with its location.
 
 ### Output topic (to robot)
 
-`multiorder_alg::waypoint` is a message type that tells the robot the node to go to 
-and the action to do (as a string). 
+`multiorder_alg::batch` is a message type with an array of `multiorder_alg::waypoint`s. 
+It represents a batch of waypoints/moves that the ground station sends to the robot. 
+
+`multiorder_alg::waypoint` is a message type with a single move/waypoint 
+that tells the robot the node to go to and the action to do (as a string). 
 
 
 ## File overview
