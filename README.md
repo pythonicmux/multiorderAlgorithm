@@ -193,8 +193,8 @@ contains the ROS node that faciliates online order processing and robot planning
 
 ### `src/multiorder_node/src/multiorder_alg_test.cpp` 
 is the high-level ROS main that instantiates a `MultiorderNode` and tests it with a graph of CMU. 
-It does solver tests for the algorithms and an involved ground station test that simulates 
-a simulated `TestRobot` which drives around the graph. 
+It does solver tests for the algorithms and an involved ground station test that creates 
+a `TestRobotNode`, a ROS node that simulates a robot driving around the graph. 
 
 ### `src/multiorder_node/src/multiorder_alg_node.cpp`
 is a high-level ROS main that instantiates a `MultiorderNode` with a graph of CMU and does nothing. 
