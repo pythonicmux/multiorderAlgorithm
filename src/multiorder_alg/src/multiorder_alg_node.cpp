@@ -1,8 +1,10 @@
 #include <ros/ros.h>
 #include <multiorder_alg/MultiorderNode.hpp>
+#include "multiorder_alg/batch.h"
 #include "multiorder_alg/order.h"
 #include "multiorder_alg/robotStatus.h"
 #include "multiorder_alg/waypoint.h"
+#include <mutex>
 #include <set>
 #include <vector>
 
@@ -178,31 +180,54 @@ void testImpossibleWeight(Multiorder::MultiorderNode& mn)
 
 //// GROUND STATION TESTS
 
-// Immediate "goes to" all waypoints it gets.
+// Simulates "driving to" waypoints it gets with heartbeats @ 10 Hz and 
+// 1s transit times between adjacent nodes.
 class TestRobotNode {
 public:
     TestRobotNode(ros::NodeHandle& nodeHandle) : nh_(nodeHandle) {
         // Create robot status publisher and waypoint listener. 
-        sPub_ = nh_.advertise<multiorder_alg::robotStatus>("/robot_status", 10);
-        wSub_ = nh_.subscribe<multiorder_alg::waypoint>("/robot_waypoints", 10, 
-                &TestRobotNode::sendBackLocation, this); 
+        sPub_ = nh_.advertise<multiorder_alg::robotStatus>("/robot_status", 100);
+        wSub_ = nh_.subscribe<multiorder_alg::batch>("/robot_waypoints", 100, 
+                &TestRobotNode::getNewBatch, this); 
         ROS_INFO("Test robot up\n");
     }
 
     ~TestRobotNode() {} 
 
-    void sendBackLocation(const multiorder_alg::waypoint waypoint) {
-        ROS_INFO("Test robot got waypoint to go to %d for %s\n", 
-                waypoint.nextNode, waypoint.action.c_str());
-        multiorder_alg::robotStatus rs;
-        rs.locationNode = waypoint.nextNode;
-        sPub_.publish(rs);
+    void getNewBatch(const multiorder_alg::batch batch) {
+        m_.lock();
+        batch_ = batch.waypoints;
+        ROS_INFO("Test robot received %d orders.\n", batch_.size());
+        m_.unlock();
+    }
+
+    // Simulate sending heartbeats by "driving" from the last node 
+    // with a 1s node-to-node drive time, with heartbeats 
+    // being sent every 10 Hz (0.1 s / heartbeat) or so. 
+    void driveToNextLocation() {
+        m_.lock();
+        if(batch_.size() > 0){
+            ROS_INFO("Test robot driving to %d.\n", batch_[0].nextNode);
+            for(int i = 0; i < 10; i++) {
+                multiorder_alg::robotStatus rs;
+                rs.locationNode = batch_[0].nextNode;
+                sPub_.publish(rs);
+                // Sleep for 100 ms per heartbeat.
+                ros::Duration(.1).sleep();
+            }
+
+            // This move is now done. 
+            batch_.erase(batch_.begin());
+        }
+        m_.unlock();
     }
 
 private:
     ros::NodeHandle& nh_;
     ros::Publisher sPub_;
     ros::Subscriber wSub_;
+    std::vector<multiorder_alg::waypoint> batch_;
+    std::mutex m_;
 };
 
 
@@ -231,6 +256,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "multiorder_alg_node");
     ros::NodeHandle nodeHandle;
+    ros::NodeHandle nodeHandleTest;
 
     // Initialize the graph of CMU to pass in. 
     initializeCMU();
@@ -248,20 +274,26 @@ int main(int argc, char** argv)
             7, 2.0, robotStartNode);
 
     // Test the multiorder algorithm. 
-    ROS_INFO_STREAM("Tests starting...\n");
     testEasy(mn);
     testMedium(mn);
     testIntermediatePath(mn);
     testImpossibleWeight(mn);
 
-    // COMMENT THIS OUT WHEN TESTING - TESTROBOTNODE 
-    // PUBLISHES THINGS.
-    TestRobotNode testRobot(nodeHandle);
-    groundStationTest(nodeHandle, robotStartNode);
+    // Initialize a simulated robot. 
+    TestRobotNode testRobot(nodeHandleTest);
+    // Send orders to ground station, which will eventually 
+    // be sent to robot as waypoints. 
+    groundStationTest(nodeHandleTest, robotStartNode);
 
-    ROS_INFO_STREAM("...tests done. Ready for operation.\n");
+    while(ros::ok()) {
+        // The robot drives to the next location...
+        testRobot.driveToNextLocation();
 
-    ros::spin();
+        // ...and delivers, which takes 0.5s.
+        ros::Duration(0.5).sleep();
+
+        ros::spinOnce();
+    }
 
     return 0;
 }

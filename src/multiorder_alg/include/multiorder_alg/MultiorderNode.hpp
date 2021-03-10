@@ -1,10 +1,14 @@
 #pragma once
 
+#include "multiorder_alg/batch.h"
 #include "multiorder_alg/order.h"
 #include "multiorder_alg/robotStatus.h"
 #include "multiorder_alg/waypoint.h"
+
 #include "multiorder_alg/MultiorderSolver.hpp"
+
 #include <ros/ros.h>
+
 #include <map>
 #include <mutex>
 #include <vector>
@@ -29,17 +33,17 @@ public:
     virtual ~MultiorderNode();
 
     // orderCallback processes an order and queues it for processing. If there 
-    // is no current batch of moves for the robot then send the robot 
-    // a new waypoint. 
+    // is no current batch of moves for the robot then it calculates and 
+    // sends the robot a new batch of waypoints. 
     void orderCallback(const multiorder_alg::order order);
 
-    // robotStatusCallback receives a robot status update and 
-    // it sends either a new move or throws an error if the robot 
-    // went to the wrong place. 
+    // robotStatusCallback receives a robot status update/heartbeat and 
+    // keeps track of the robot's location. 
     //
-    // If the robot goes to the correct place, 
-    // the node will delete the current move from plannedMoves_, 
-    // and send the next move in the queue if there is one. 
+    // It tracks where the robot is in its current batch of moves, 
+    // and once the robot is done, it calculates and 
+    // sends the robot a new batch of moves, if there are 
+    // waiting orders to make a new batch with. 
     void robotStatusCallback(const multiorder_alg::robotStatus status);
 
     // A solver to process orders and turn them into moves. 
@@ -65,9 +69,13 @@ private:
     std::vector<Order> waitingOrders_;
 
     // An ordered list of the moves that the robot should do to 
-    // fulfill its orders on time. The 0th index in this vector 
-    // is the current move that the robot is doing. 
+    // fulfill its orders on time. This is the current batch 
+    // of moves that is entirely sent to the robot, and the 
+    // ground station keeps track of which move the robot is on.
     std::vector<Move> plannedMoves_;
+    // The index of the current move in plannedMoves_ that 
+    // the robot is executing. This is -1 if the robot is idle.
+    int currentMove_;
 
     // The next location of the robot, once it finishes its current 
     // move, plannedMoves_[0], or it's the current location 

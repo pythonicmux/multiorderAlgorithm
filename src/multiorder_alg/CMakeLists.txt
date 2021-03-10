@@ -53,6 +53,7 @@ add_message_files(
   order.msg
   robotStatus.msg
   waypoint.msg
+  batch.msg
 )
 
 ## Generate services in the 'srv' folder
