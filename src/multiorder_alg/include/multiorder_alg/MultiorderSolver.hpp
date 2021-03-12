@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <limits>
 #include <map>
+#include <string>
 #include <vector>
 
 namespace Multiorder {
@@ -42,6 +43,12 @@ struct Order {
     // Nice to have a default copy constructor 
     // for any recursion.
     Order(const Order&) = default;
+
+    // Hashable as a string to facilitate memoization. 
+    std::string toString() const {
+        return "Order id: " + std::to_string(id) + "; source: " + \
+            std::to_string(S) + "; destination: " + std::to_string(D) + "; weight: " + std::to_string(w);
+    }
 };
 
 // The definition of a "move" that a robot makes, 
@@ -66,14 +73,15 @@ public:
 
     virtual ~MultiorderSolver();
 
-    // calculateMultiorder will print out a satisfactory 
+    // calculateMultiorder will print out an optimal (minimum total distance travelled)
     // order of nodes to go to following the edges and actions to perform at each 
     // node in order to deliver all orders, and make sure that 
     // the time between picking up and dropping off each order id
     // is at most 2 * minTravelTimes_[S_id][D_id] (i.e. the minimum time it 
     // takes to go from S to D and back), and that the robot 
     // never picks up more than its capacitys' worth of orders. The 
-    // robot will start at node robotStartNode.
+    // robot will start at node robotStartNode. If there is satisfactory solution 
+    // then this function returns an empty vector. 
     //
     // Each order must contain a valid source/destination node and a non-negative capacity, 
     // and robotStartNode must be a valid node. 
@@ -134,10 +142,38 @@ private:
         }
         
         ~Robot() {};
+
+        // Hashable as a unique string to facilitate memoization. 
+        //
+        // Note that two identical robots are guaranteed to get the 
+        // same string because iterating through a set will return 
+        // the elements in sorted order. 
+        std::string toString() const {
+            std::string hash = "";
+            hash += "location: " + std::to_string(location) + "; currentOrders: ";
+            for(auto x:currentOrders) {
+                hash += "{" + x.toString() + "}";
+            }
+            hash += "; remainingOrders: ";
+            for(auto x:remainingOrders) {
+                hash += "{" + x.toString() + "}";
+            }
+            hash += "; deliveryTimes: ";
+            for(auto p:deliveryTimes) {
+                hash += "{" + p.first.toString() + "," + std::to_string(p.second) + "}";
+            }
+
+            return hash;
+        }
     };
     
     // Helper function for recursing down with a partially completed state. 
-    std::vector<Move> calculateMultiorder(Robot robot);
+    std::vector<Move> calculateMultiorder(Robot robot, double currentCost);
+
+    // Memoization tables for the algorithm, one for cost and one for the moves.
+    std::map<std::string, double> optimalCosts_; // Total cost of the moves for a robot to 
+                                                 // optimally fulfill the orders on it. 
+    std::map<std::string, std::vector<Move>> optimalMoves_;
 };
 
 } // namespace Multiorder
