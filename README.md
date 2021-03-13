@@ -1,8 +1,7 @@
 # Overview
 
-This is a proof-of-concept for an algorithm that will act as a global planner for an
-autonomous delivery robot (currently this is just a constraint satisfaction problem 
-until I find some kind of cost function to make it an optimization problem). I've also implemented 
+This is a proof-of-concept for an optimization algorithm that will act as a global planner for an
+autonomous delivery robot. I've also implemented 
 an online global planner that uses this algorithm, which can service and plan orders for a robot to deliver. 
 I'm designing and implementing this for 18-500 ECE Senior Capstone at Carnegie Mellon, Spring 2021. 
 I'm on Team C9 (GrubTub). 
@@ -46,6 +45,11 @@ is just the time it takes a human walking from S to D and back to S), and at any
 robot carries no more than C total capacity. 
 </b>
 
+<b>
+Furthermore, this algorithm must return a satisfactory output that minimizes the total distance travelled, 
+  i.e. the sum of weights between each edge is minimized.
+</b>
+
 ## The solution, currently:
 
 The user specifies a graph and initial robot state for the MultiorderNode to calculate 
@@ -55,14 +59,28 @@ When processing an input list of orders, `MultiorderNode::calculateMultiorder` w
 internal robot "state" and backtrack on all possible moves that the robot can do given its current state. 
 It recurses and views all possible next states to try to find a solution. 
 
-### Complexity
+### Dynamic Programming Approach + Complexity
 
 The state space is all possible robot states, i.e. all possible combos of current orders with elapsed delivery times * 
-all current robot locations, and the backtracking algorithm will need to search possibly all of them. 
+all current robot locations, and the algorithm will need to search possibly all of them.
 
-The robot can have nC1 + nC2 + ... nCn = 2^n possibilities for current orders, and taking into account the different 
-elapsed delivery times, the complexity becomes max HRTT of any order*2^n = O(2^n). If this problem is NP-hard, which 
-  it likely is, then this is the best complexity we can get for a solution (assuming P != NP).
+There's optimal substructure in this problem, since the minimum-distance solution for a state with onboard orders O and 
+waiting orders W will be the minimum-distance solution across the next robot state (a subproblem) after any possible pickups/dropoffs + the distance to do that pickup or dropoff. 
+
+W will always decrease in size to O, and O can only have elements from W, and once an element from 
+O is dropped off it never comes again, so every next robot state will be a smaller subproblem of the 
+previous "parent" robot state.
+
+Therefore, we can use dynamic programming to solve this problem since 
+it has a set state space and a problem can be broken down into strictly smaller subproblems.
+
+We use memoization on the robot states (the `Robot` struct has a toString() function which provides a unique 
+hash for each robot state) so that each subproblem is only ever calculated once.
+
+The robot can have nC1 + nC2 + ... nCn = 2^n possibilities for current orders, so the state space 
+is O(2^n), since a robot state will have some subset of these orders. 
+
+TODO figure out rest of complexity
   
 
   
@@ -78,7 +96,7 @@ can repeatedly give the solver batches of orders to solve and find a satisfactor
 
 This function is the multiorder algorithm. It takes in a list of `Order`s and the robot's starting location 
 and will output an ordered vector of `Move`s that the robot 
-can do to deliver all the `Order`s on time and with the weight limitations of the robot, 
+can do to deliver all the `Order`s on time and with the weight limitations of the robot, with minimum distance travelled, 
 if possible. It also outputs all the intermediate "transits" the robot has to do, i.e. 
 the entire path the robot has to take. If it's impossible, the algorithm returns an empty vector. 
 
