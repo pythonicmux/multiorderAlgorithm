@@ -162,6 +162,43 @@ void testIntermediatePath(Multiorder::MultiorderNode& mn)
     }
 }
 
+// Test that it doesn't just return the first path. 
+// Have many pickups along a path from the first order's pickup to 
+// one shared dropoff point. 
+// Since the algorithm's implementation looks at pickups first, 
+// an incorrect solutin will have drop off and then pick up instead 
+// of doing a series of pickups and then a dropoff. 
+void testDP(Multiorder::MultiorderNode& mn) 
+{
+    std::vector<Multiorder::Order> input;
+    // 0-4-5-6-2-3 is a path from 0 to 3 in the graph. 
+    // The correct, minimum-distance solution should be following this path. 
+    input.push_back(Multiorder::Order(0, 0, 3, 0.1));
+    input.push_back(Multiorder::Order(1, 4, 3, 0.1));
+    input.push_back(Multiorder::Order(2, 5, 3, 0.1));
+    input.push_back(Multiorder::Order(3, 6, 3, 0.1));
+    input.push_back(Multiorder::Order(4, 2, 3, 0.1));
+    input.push_back(Multiorder::Order(5, 3, 3, 0.1));
+
+    auto sol = mn.solver.calculateMultiorder(input, 0);
+
+    if(sol.size() == 0) {
+        ROS_ERROR("testDP failed\n");
+    } else {
+        printMoves(sol);
+        // Pick up orders at 0,4,5,6,2,3 and then drop off all six orders at 3.
+        std::vector<int> ans = {0,4,5,6,2,3,3,3,3,3,3,3};
+        for(int i = 0; i < ans.size(); i++) {
+            if(sol.size() != ans.size() || sol[i].node != ans[i]) {
+                ROS_INFO_STREAM("testDP found incorrect solution\n");
+                return;
+            }
+        }
+
+        ROS_INFO_STREAM("testDP passed\n");
+    }
+}
+
 // An impossible test with a 2.1 kg order. Should return no solution. 
 void testImpossibleWeight(Multiorder::MultiorderNode& mn) 
 {
@@ -277,6 +314,7 @@ int main(int argc, char** argv)
     testEasy(mn);
     testMedium(mn);
     testIntermediatePath(mn);
+    testDP(mn);
     testImpossibleWeight(mn);
 
     // Initialize a simulated robot. 
