@@ -122,8 +122,9 @@ void MultiorderSolver::precalculateMinTravelTimes() {
 
 std::vector<Move> MultiorderSolver::calculateMultiorder(std::vector<Order> orders, int robotStartNode) {
     // Reset memo tables.
-    optimalCosts_.clear();
-    optimalMoves_.clear();
+    optimalCost_ = -1.0;
+    optimalMoves_ = std::vector<Move>{};
+    seenStates_ = std::set<std::string>{};
 
     // Check that the robot starting point is valid. 
     if (robotStartNode < 0 || robotStartNode > numNodes_) {
@@ -143,35 +144,35 @@ std::vector<Move> MultiorderSolver::calculateMultiorder(std::vector<Order> order
         r.remainingOrders.insert(o);
     }
 
-    return calculateMultiorder(r, 0.0);
+    calculateMultiorder(r, 0.0);
+
+    return optimalMoves_;
 }
 
-// Try every possible next move that can still satisfy the constraints 
-// and backtrack if needed, checking all possible solutions and 
-// returning the minimum cost one, if it exists.  
-std::vector<Move> MultiorderSolver::calculateMultiorder(Robot r, double currentCost) {
-    // If the optimal solution for this robot is already calculated then 
-    // return the memoized solution.
-    if(optimalCosts_.find(r.toString()) != optimalCosts_.end()) {
-        return optimalMoves_[r.toString()];
+void MultiorderSolver::calculateMultiorder(Robot r, double currentCost) {
+    // If this state was seen then just return the optimal solution so far- 
+    // no need to recalculate, optimal or not.
+    if(seenStates_.find(r.toString()) != seenStates_.end()) {
+        ROS_INFO("Found repeated state");
+        return;
     }
+
+    // Mark this state as seen, otherwise. 
+    seenStates_.insert(r.toString());
 
     // If we're in an invalid state then return nothing, i.e. it's 
     // impossible given our circumstances.
     // Capacity must be nonnegative, and the delivery times map must be 
     // the same size as the current orders vector. 
     if(r.remainingCapacity < 0 || r.deliveryTimes.size() != r.currentOrders.size()) {
-        return std::vector<Move>{};
+        return;
     }
     // The deliveries must be <= 2*min time to travel there and back.
     for(auto p:r.deliveryTimes) {
         if(p.second > 2*minTravelTimes_[p.first.S][p.first.D]) {
-            return std::vector<Move>{};
+            return;
         }
     }
-
-    double optimalCost = -1.0; 
-    std::vector<Move> optimalSol{};
 
     // We can either try picking up an order or not picking up any orders.
     for (auto order:r.remainingOrders) {
@@ -198,14 +199,10 @@ std::vector<Move> MultiorderSolver::calculateMultiorder(Robot r, double currentC
             // Pick up the order at the order's starting point.
             next.moves.push_back(Move{order.S, PICKUP, order.id});
 
-            // See if this next state yields a more optimal solution.
-            auto potentialSol = calculateMultiorder(next, currentCost + minTravelTimes_[r.location][order.D]);
-            if(potentialSol.size() && (optimalCost < 0 || 
-                        optimalCost > optimalCosts_[next.toString()])) {
-                optimalSol = potentialSol;
-                optimalCost = optimalCosts_[next.toString()];
-            }
-        } 
+            // See if this next state yields a more optimal solution than the 
+            // best one seen so far.
+            calculateMultiorder(next, currentCost + minTravelTimes_[r.location][order.S]);
+        }
     }
 
     // We can try dropping off an order or not dropping off any orders. 
@@ -229,39 +226,33 @@ std::vector<Move> MultiorderSolver::calculateMultiorder(Robot r, double currentC
         // Pick up the order at the order's dropoff point.
         next.moves.push_back(Move{order.D, DROPOFF, order.id});
 
-        // See if this next state yields a more optimal solution.
-        auto potentialSol = calculateMultiorder(next, currentCost + minTravelTimes_[r.location][order.D]);
-        if(potentialSol.size() && (optimalCost < 0 || 
-                    optimalCost > optimalCosts_[next.toString()])) {
-            optimalSol = potentialSol;
-            optimalCost = optimalCosts_[next.toString()];
-        }
+        // See if this next state yields a more optimal solution than the 
+        // best one seen so far.
+        calculateMultiorder(next, currentCost + minTravelTimes_[r.location][order.D]);
     }
 
     // Make sure the state of the robot is intact.
     if(r.remainingCapacity < 0 || r.deliveryTimes.size() != r.currentOrders.size()) {
-        return std::vector<Move>{};
+        return;
     }
 
-    // If there is no optimal solution then either the robot has no orders, in 
-    // which case it is done with all the moves that it took to go from 
-    // the initial state to this state, or the algo has failed to find a solution.
-    if(optimalCost < 0) {
-        if((r.remainingOrders.size() + r.currentOrders.size()) == 0) {
-            optimalCosts_[r.toString()] = currentCost;
-            optimalMoves_[r.toString()] = r.moves;
-            // ROS_INFO("Found best sol for BASE CASE %d is %f\n", r.toString().size(), currentCost);
-            return r.moves;
-        }
-        return std::vector<Move>{};
-    } else {
-        // Otherwise, return the optimal solution. 
-        optimalCosts_[r.toString()] = optimalCost;
-        optimalMoves_[r.toString()] = optimalSol;
-        // ROS_INFO("Found best sol for %d is %f\n", r.toString().size(), optimalCost);
-        return optimalSol;
-    }
     
+    // If this is the last state and the finished set of moves is better then record it, 
+    // else return failure.
+    if((r.remainingOrders.size() + r.currentOrders.size() == 0) && (optimalCost_ < 0 || optimalCost_ > currentCost)) {
+        optimalCost_ = currentCost;
+        optimalMoves_ = r.moves;
+        /*ROS_INFO("Found optimal solution with %f cost and moves from %s", currentCost, r.toString().c_str());
+        for(auto m:r.moves) {
+            if(m.action == DROPOFF) {
+                ROS_INFO("\tgo to %d to dropoff", m.node);
+            } else if(m.action == PICKUP) {
+                ROS_INFO("\tgo to %d to pickup", m.node);
+            } else {
+                ROS_INFO("\tgo to %d to transit", m.node);
+            }
+        }*/
+    }     
 }
 
 } // namespace Multiorder

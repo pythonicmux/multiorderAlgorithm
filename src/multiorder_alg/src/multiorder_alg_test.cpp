@@ -163,22 +163,21 @@ void testIntermediatePath(Multiorder::MultiorderNode& mn)
 }
 
 // Test that it doesn't just return the first path. 
-// Have many pickups along a path from the first order's pickup to 
-// one shared dropoff point. 
+// Have disjoint pickups and dropoffs across edges. 
 // Since the algorithm's implementation looks at pickups first, 
-// an incorrect solutin will have drop off and then pick up instead 
-// of doing a series of pickups and then a dropoff. 
+// an incorrect solution will try to pick up everything first, while the 
+// actual optimal solution is to pick up, drop off along the path.
 void testDP(Multiorder::MultiorderNode& mn) 
 {
     std::vector<Multiorder::Order> input;
-    // 0-4-5-6-2-3 is a path from 0 to 3 in the graph. 
+    // 0-4-5-1-2-6-5 is a path from 0 to 3 in the graph. 
     // The correct, minimum-distance solution should be following this path. 
-    input.push_back(Multiorder::Order(0, 0, 3, 0.1));
-    input.push_back(Multiorder::Order(1, 4, 3, 0.1));
-    input.push_back(Multiorder::Order(2, 5, 3, 0.1));
-    input.push_back(Multiorder::Order(3, 6, 3, 0.1));
-    input.push_back(Multiorder::Order(4, 2, 3, 0.1));
-    input.push_back(Multiorder::Order(5, 3, 3, 0.1));
+    input.push_back(Multiorder::Order(0, 0, 4, 0.1));
+    input.push_back(Multiorder::Order(1, 4, 5, 0.1));
+    input.push_back(Multiorder::Order(2, 5, 1, 0.1));
+    input.push_back(Multiorder::Order(3, 1, 2, 0.1));
+    input.push_back(Multiorder::Order(4, 2, 6, 0.1));
+    input.push_back(Multiorder::Order(5, 6, 5, 0.1));
 
     auto sol = mn.solver.calculateMultiorder(input, 0);
 
@@ -186,8 +185,8 @@ void testDP(Multiorder::MultiorderNode& mn)
         ROS_ERROR("testDP failed\n");
     } else {
         printMoves(sol);
-        // Pick up orders at 0,4,5,6,2,3 and then drop off all six orders at 3.
-        std::vector<int> ans = {0,4,5,6,2,3,3,3,3,3,3,3};
+        // Should just follow the path.
+        std::vector<int> ans = {0,4,4,5,5,1,1,2,2,6,6,5};
         for(int i = 0; i < ans.size(); i++) {
             if(sol.size() != ans.size() || sol[i].node != ans[i]) {
                 ROS_INFO_STREAM("testDP found incorrect solution\n");

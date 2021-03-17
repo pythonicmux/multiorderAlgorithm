@@ -57,6 +57,18 @@ struct Move {
     int node; // Node that the robot has travelled to
     Actions action;
     int id; // Order ID robot is processing
+    
+    // Hashable as a string to facilitate memoization. 
+    std::string toString() const {
+        switch(action){
+            case PICKUP:
+                return "Action: Pickup; Node: " + std::to_string(node) + " Order: " + std::to_string(id);
+            case DROPOFF:
+                return "Action: Dropoff; Node: " + std::to_string(node) + " Order: " + std::to_string(id);
+            default:
+                return "Action: Transit; Node: " + std::to_string(node) + " Order: " + std::to_string(id);
+        }
+    }
 };
 
 class MultiorderSolver {
@@ -162,18 +174,25 @@ private:
             for(auto p:deliveryTimes) {
                 hash += "{" + p.first.toString() + "," + std::to_string(p.second) + "}";
             }
+            hash += "; moves: ";
+            for(auto m:moves) {
+                hash += "{" + m.toString() + "}";
+            }
 
             return hash;
         }
     };
     
-    // Helper function for recursing down with a partially completed state. 
-    std::vector<Move> calculateMultiorder(Robot robot, double currentCost);
+    // Helper function for recursing down with a partially completed state with the 
+    // current cost- searches the state space and updates the fields keeping 
+    // track of the optimal cost and moves seen so far. 
+    void calculateMultiorder(Robot robot, double currentCost);
 
-    // Memoization tables for the algorithm, one for cost and one for the moves.
-    std::map<std::string, double> optimalCosts_; // Total cost of the moves for a robot to 
-                                                 // optimally fulfill the orders on it. 
-    std::map<std::string, std::vector<Move>> optimalMoves_;
+    // Keep track of the most optimal path and states seen so far. 
+    std::set<std::string> seenStates_;
+    double optimalCost_; // Total cost of the moves for a robot to 
+                         // optimally fulfill the orders on it. 
+    std::vector<Move> optimalMoves_;
 };
 
 } // namespace Multiorder
