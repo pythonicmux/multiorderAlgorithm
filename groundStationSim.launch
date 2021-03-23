@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="station_gui" name="gui" type="gui.py" output="screen" />
+    <node pkg="station_gui" name="operator" type="operator_gui.py" output="screen" />
+    <node pkg="station_gui" name="user" type="user_gui.py" output="screen" />
 </launch>

@@ -13,10 +13,10 @@ from PyQt4 import QtGui
 from PyQt4.QtGui import QLabel, QVBoxLayout, QHBoxLayout, QSlider, QPushButton
 from PyQt4.QtCore import Qt
 
-class PyGui(QtGui.QWidget):
+class OperatorGui(QtGui.QWidget):
     def __init__(self):
-        super(PyGui, self).__init__()
-        self.setObjectName('PyGui')
+        super(OperatorGui, self).__init__()
+        self.setObjectName('OperatorGui')
 
         # Listen to joystick commands and publish them as twists
         # if the emergency operator mode is on.
@@ -59,7 +59,7 @@ class PyGui(QtGui.QWidget):
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-    pyShow = PyGui()
-    pyShow.show()
+    opShow = OperatorGui()
+    opShow.show()
     sys.exit(app.exec_())
 
